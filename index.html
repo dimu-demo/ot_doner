@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title id="page-title">ОТ ДОНЕР — Кухня на углях | Доставка сочного фастфуда</title>
+    <link id="page-favicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dimalikee/test/refs/heads/main/images%20(1).png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="schedule.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        flame: {
+                            50: '#fff1f2',
+                            400: '#ff4d1c',
+                            500: '#ff2a00',
+                            600: '#e61e00',
+                            700: '#cc1100',
+                            glow: '#ff4800'
+                        },
+                        dark: {
+                            950: '#060606',
+                            900: '#0d0d0d',
+                            800: '#141414',
+                            700: '#1e1e1e',
+                            600: '#2a2a2a',
+                            500: '#383838'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    },
+                    screens: {
+                        'xs': '380px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+        }
+
+        body {
+            background-color: #060606;
+            color: #f3f4f6;
+            font-family: 'Rubik', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Prevent Safari iOS zoom on input focus by maintaining minimum font size on touch */
+        @media (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Flame glow animations */
+        .flame-glow {
+            box-shadow: 0 0 20px rgba(255, 42, 0, 0.45);
+        }
+        
+        .flame-glow-sm {
+            box-shadow: 0 0 10px rgba(255, 42, 0, 0.35);
+        }
+
+        .flame-text-glow {
+            text-shadow: 0 0 12px rgba(255, 42, 0, 0.6);
+        }
+
+        /* Custom Mobile Scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060606;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff2a00;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Animated Flame Effect */
+        @keyframes pulseFlame {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.95; }
+            50% { transform: scale(1.04) rotate(1deg); opacity: 1; filter: drop-shadow(0 0 10px #ff2a00); }
+        }
+
+        .animated-flame {
+            animation: pulseFlame 3s infinite ease-in-out;
+        }
+
+        /* Pop animation for cart counter */
+        @keyframes popIn {
+            0% { transform: scale(0.6); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        .pop-animation {
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Safe area padding helper */
+        .pb-safe {
+            padding-bottom: calc(4.5rem + var(--sab));
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-gray-100 min-h-screen flex flex-col pb-safe md:pb-0 selection:bg-flame-500 selection:text-white antialiased">
+
+    <header class="sticky top-0 z-40 bg-dark-900/95 backdrop-blur-md border-b border-dark-700/80 transition-all pt-[var(--sat)]">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-20 flex items-center justify-between gap-2">
+            
+            <!-- Logo & Online Badge Section -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="#" class="flex items-center group shrink-0">
+                    <img id="header-logo" src="https://raw.githubusercontent.com/Dimalikee/test/refs/heads/main/images%20(1).png" alt="ОТ ДОНЕР" class="h-9 xs:h-11 sm:h-14 w-auto object-contain animated-flame filter drop-shadow-[0_0_10px_rgba(255,42,0,0.5)] group-hover:scale-105 transition-transform" loading="eager">
+                </a>
+
+                <div id="online-badge" class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0">
+                    <span class="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                        <span id="online-badge-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span id="online-badge-dot" class="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
+                    </span>
+                    <span id="online-badge-text" class="font-bold tracking-wide uppercase text-[9px] xs:text-[10px] sm:text-[11px]">Онлайн</span>
+                </div>
+            </div>
+
+            <!-- Navigation for Desktop -->
+            <nav class="hidden md:flex items-center gap-6 lg:gap-8 font-medium text-sm text-gray-300">
+                <a href="#menu" class="hover:text-flame-500 transition-colors py-2">Меню</a>
+                <a href="#about" class="hover:text-flame-500 transition-colors py-2">О нас</a>
+                <a href="#contacts" class="hover:text-flame-500 transition-colors py-2">Контакты</a>
+            </nav>
+
+            <!-- Actions: Cart Button & Phone Link -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a id="header-phone-link" href="tel:+77089990011" class="hidden lg:flex items-center gap-2 text-xs font-bold text-gray-300 hover:text-white bg-dark-800 px-3 py-2 rounded-xl border border-dark-700 transition-colors">
+                    <svg class="w-4 h-4 text-flame-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    <span id="header-phone-text">+7 (708) 999-00-11</span>
+                </a>
+
+                <button onclick="toggleCart()" aria-label="Открыть корзину" class="relative flex items-center gap-1.5 sm:gap-3 bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-5 rounded-xl transition-all duration-150 flame-glow active:scale-95 text-xs sm:text-sm select-none">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    <span class="hidden sm:inline">Корзина</span>
+                    <span id="cart-total-header" class="bg-dark-950/60 px-1.5 py-0.5 rounded-md text-[11px] sm:text-xs font-mono font-bold">0 ₸</span>
+                    <span id="cart-count-badge" class="absolute -top-1.5 -right-1.5 bg-white text-flame-600 font-black text-[10px] sm:text-xs w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-dark-900 hidden pop-animation shadow-md">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative bg-gradient-to-b from-dark-900 via-dark-950 to-dark-950 py-6 sm:py-14 md:py-20 overflow-hidden border-b border-dark-800">
+        <div class="absolute inset-0 opacity-20 pointer-events-none">
+            <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-[280px] xs:w-[350px] sm:w-[600px] h-[280px] xs:h-[350px] sm:h-[600px] bg-flame-500 rounded-full blur-[80px] sm:blur-[140px]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10 grid md:grid-cols-2 gap-5 sm:gap-10 items-center">
+            
+            <div class="space-y-3.5 sm:space-y-6 text-center md:text-left">
+                <h1 class="font-heading text-2xl xs:text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.15]">
+                    СОЧНЫЙ ДОНЕР <br class="hidden xs:inline">
+                    <span class="inline-block bg-[#ff2a00] text-white px-2 py-0.5 rounded-md flame-text-glow mt-1">
+                        С ОГНЕННЫМ ВКУСОМ
+                    </span>
+                </h1>
+                
+                <p class="text-gray-300 text-xs sm:text-base max-w-xl mx-auto md:mx-0 leading-relaxed font-normal">
+                    Отборная говядина и курица, фирменный соус по тайному рецепту, свежие овощи и хрустящая лавашная корочка.
+                </p>
+
+                <div class="flex flex-col xs:flex-row items-stretch xs:items-center justify-center md:justify-start gap-2.5 sm:gap-4 pt-1">
+                    <a href="#menu" class="bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white font-bold px-5 py-3 rounded-xl shadow-lg transition-all flame-glow flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base active:scale-95 text-center">
+                        <span>Выбрать блюда</span>
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </a>
+
+                    <div class="flex items-center justify-center xs:justify-start gap-2.5 text-left bg-dark-900/90 px-3.5 py-2.5 rounded-xl border border-dark-800">
+                        <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-dark-800 flex items-center justify-center border border-dark-700 text-flame-500 font-bold shrink-0">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-flame-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-[10px] sm:text-xs text-gray-400">Доставка до двери</div>
+                            <div class="text-xs sm:text-sm font-bold text-white">30 - 45 минут</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Laptop/Mobile Visual Box with photo -->
+            <div class="relative flex justify-center mt-1 md:mt-0">
+                <div class="relative w-full max-w-sm sm:max-w-md bg-gradient-to-tr from-dark-900 to-dark-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-dark-700/80 shadow-2xl flex flex-col justify-between overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-36 sm:w-64 h-36 sm:h-64 bg-flame-600/20 rounded-full blur-2xl group-hover:bg-flame-600/30 transition-all"></div>
+                    
+                    <div class="flex justify-between items-start z-10 mb-2 sm:mb-3">
+                        <span class="bg-red-600 text-white font-black text-[9px] xs:text-[10px] sm:text-xs uppercase px-2 py-0.5 rounded-md tracking-wider shadow">
+                            🔥 ХИТ ПРОДАЖ
+                        </span>
+                    </div>
+
+                    <!-- Real Photo Container -->
+                    <div class="relative w-full h-36 xs:h-44 sm:h-56 rounded-xl overflow-hidden mb-2.5 sm:mb-3 border border-dark-700/80 z-10">
+                        <img id="hero-food-image" src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80" alt="Донер От Донер" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="eager">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent"></div>
+                    </div>
+
+                    <div class="z-10 flex justify-between items-center border-t border-dark-700/80 pt-2.5">
+                        <div>
+                            <div id="hero-food-name" class="text-[10px] sm:text-xs text-gray-400">Фирменный "От Донер"</div>
+                            <div id="hero-food-price" class="text-sm xs:text-base sm:text-xl font-black text-white font-mono">2 200 ₸</div>
+                        </div>
+                        <button id="hero-food-add" onclick="addToCartDirect(1)" aria-label="Добавить блюдо с шапки в корзину" class="bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white p-2 sm:p-3 px-3 rounded-xl transition-colors flame-glow-sm active:scale-95 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <span class="text-xs font-bold">В корзину</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <main id="menu" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12 flex-grow w-full">
+        
+        <!-- Header & Search -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3.5 mb-4 sm:mb-6">
+            <div>
+                <h2 class="font-heading text-xl xs:text-2xl sm:text-3xl font-black text-white uppercase tracking-wide flex items-center gap-2">
+                    <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0284 1.11813C9.69728 1.2952 9.53443 1.61638 9.49957 1.97965C9.48456 2.15538 9.46201 2.32986 9.43136 2.50363C9.3663 2.87248 9.24303 3.3937 9.01205 3.98313C8.5513 5.15891 7.67023 6.58926 5.96985 7.65195C3.57358 9.14956 2.68473 12.5146 3.06456 15.527C3.45234 18.6026 5.20871 21.7903 8.68375 22.9486C9.03 23.0641 9.41163 22.9817 9.67942 22.7337C10.0071 22.4303 10.0238 22.0282 9.94052 21.6223C9.87941 21.3244 9.74999 20.5785 9.74999 19.6875C9.74999 19.3992 9.76332 19.1034 9.79413 18.8068C10.3282 20.031 11.0522 20.9238 11.7758 21.5623C12.8522 22.5121 13.8694 22.8574 14.1722 22.9466C14.402 23.0143 14.6462 23.0185 14.8712 22.9284C17.5283 21.8656 19.2011 20.4232 20.1356 18.7742C21.068 17.1288 21.1993 15.3939 20.9907 13.8648C20.7833 12.3436 20.2354 10.9849 19.7537 10.0215C19.3894 9.29292 19.0534 8.77091 18.8992 8.54242C18.7101 8.26241 18.4637 8.04626 18.1128 8.00636C17.8332 7.97456 17.5531 8.06207 17.3413 8.24739L15.7763 9.61686C15.9107 7.44482 15.1466 5.61996 14.1982 4.24472C13.5095 3.24609 12.7237 2.47913 12.1151 1.96354C11.8094 1.70448 11.5443 1.50549 11.3525 1.36923C11.2564 1.30103 11.1784 1.24831 11.1224 1.21142C10.7908 0.99291 10.3931 0.923125 10.0284 1.11813ZM7.76396 20.256C7.75511 20.0744 7.74999 19.8842 7.74999 19.6875C7.75 18.6347 7.89677 17.3059 8.47802 16.0708C8.67271 15.6572 8.91614 15.254 9.21914 14.8753C9.47408 14.5566 9.89709 14.4248 10.2879 14.5423C10.6787 14.6598 10.959 15.003 10.9959 15.4094C11.2221 17.8977 12.2225 19.2892 13.099 20.0626C13.5469 20.4579 13.979 20.7056 14.292 20.8525C15.5 20.9999 17.8849 18.6892 18.3955 17.7882C19.0569 16.6211 19.1756 15.356 19.0091 14.1351C18.8146 12.7092 18.2304 11.3897 17.7656 10.5337L14.6585 13.2525C14.3033 13.5634 13.779 13.5835 13.401 13.3008C13.023 13.018 12.8942 12.5095 13.092 12.0809C14.4081 9.22933 13.655 6.97987 12.5518 5.38019C12.1138 4.74521 11.6209 4.21649 11.18 3.80695C11.0999 4.088 10.9997 4.39262 10.8742 4.71284C10.696 5.16755 10.4662 5.65531 10.1704 6.15187C9.50801 7.26379 8.51483 8.41987 7.02982 9.34797C5.57752 10.2556 4.71646 12.6406 5.04885 15.2768C5.29944 17.2643 6.20241 19.1244 7.76396 20.256Z" />
+                    </svg>
+                    <span>Наше Меню</span>
+                </h2>
+                <p class="text-gray-400 text-xs sm:text-sm mt-0.5">Выберите ваши любимые сочные блюда</p>
+            </div>
+
+            <!-- Search input with explicit iOS Safari zoom guard -->
+            <div class="relative w-full md:w-80">
+                <input type="text" id="search-input" oninput="handleSearch()" placeholder="Поиск блюда..." class="w-full bg-dark-900 border border-dark-700 focus:border-flame-500 text-white text-sm rounded-xl py-2.5 sm:py-3 pl-9 pr-4 outline-none transition-colors">
+                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3 sm:top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Touch-Friendly Category Scrollbar -->
+        <div class="sticky top-14 sm:top-20 z-30 bg-dark-950/95 backdrop-blur-md py-2 -mx-3 px-3 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar border-b border-dark-800/80 mb-5">
+            <div class="flex items-center gap-2 min-w-max pr-3" id="category-pills">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
+
+        <!-- 2-column Grid on Mobile, 3-column on Tablet, 4-column on Desktop -->
+        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 xs:gap-3.5 sm:gap-6">
+            <!-- Dynamically populated via JavaScript -->
+        </div>
+
+        <!-- Empty Search State -->
+        <div id="no-results" class="hidden text-center py-12 bg-dark-900/50 rounded-2xl border border-dark-800 my-4">
+            <svg class="w-12 h-12 text-gray-500 mx-auto mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <h3 class="text-base font-bold text-white">Ничего не найдено</h3>
+            <p class="text-gray-400 text-xs mt-1">Попробуйте изменить запрос или выбрать другую категорию</p>
+        </div>
+    </main>
+
+    <section id="about" class="bg-dark-900 border-y border-dark-800 py-8 sm:py-12 my-4">
+        <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-8 text-left">
+                <div class="flex items-center gap-3.5 bg-dark-950 p-3.5 sm:p-6 rounded-2xl border border-dark-800">
+                    <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-flame-500/10 border border-flame-500/30 text-flame-500 flex items-center justify-center shrink-0">
+                       <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0284 1.11813C9.69728 1.2952 9.53443 1.61638 9.49957 1.97965C9.48456 2.15538 9.46201 2.32986 9.43136 2.50363C9.3663 2.87248 9.24303 3.3937 9.01205 3.98313C8.5513 5.15891 7.67023 6.58926 5.96985 7.65195C3.57358 9.14956 2.68473 12.5146 3.06456 15.527C3.45234 18.6026 5.20871 21.7903 8.68375 22.9486C9.03 23.0641 9.41163 22.9817 9.67942 22.7337C10.0071 22.4303 10.0238 22.0282 9.94052 21.6223C9.87941 21.3244 9.74999 20.5785 9.74999 19.6875C9.74999 19.3992 9.76332 19.1034 9.79413 18.8068C10.3282 20.031 11.0522 20.9238 11.7758 21.5623C12.8522 22.5121 13.8694 22.8574 14.1722 22.9466C14.402 23.0143 14.6462 23.0185 14.8712 22.9284C17.5283 21.8656 19.2011 20.4232 20.1356 18.7742C21.068 17.1288 21.1993 15.3939 20.9907 13.8648C20.7833 12.3436 20.2354 10.9849 19.7537 10.0215C19.3894 9.29292 19.0534 8.77091 18.8992 8.54242C18.7101 8.26241 18.4637 8.04626 18.1128 8.00636C17.8332 7.97456 17.5531 8.06207 17.3413 8.24739L15.7763 9.61686C15.9107 7.44482 15.1466 5.61996 14.1982 4.24472C13.5095 3.24609 12.7237 2.47913 12.1151 1.96354C11.8094 1.70448 11.5443 1.50549 11.3525 1.36923C11.2564 1.30103 11.1784 1.24831 11.1224 1.21142C10.7908 0.99291 10.3931 0.923125 10.0284 1.11813ZM7.76396 20.256C7.75511 20.0744 7.74999 19.8842 7.74999 19.6875C7.75 18.6347 7.89677 17.3059 8.47802 16.0708C8.67271 15.6572 8.91614 15.254 9.21914 14.8753C9.47408 14.5566 9.89709 14.4248 10.2879 14.5423C10.6787 14.6598 10.959 15.003 10.9959 15.4094C11.2221 17.8977 12.2225 19.2892 13.099 20.0626C13.5469 20.4579 13.979 20.7056 14.292 20.8525C15.5 20.9999 17.8849 18.6892 18.3955 17.7882C19.0569 16.6211 19.1756 15.356 19.0091 14.1351C18.8146 12.7092 18.2304 11.3897 17.7656 10.5337L14.6585 13.2525C14.3033 13.5634 13.779 13.5835 13.401 13.3008C13.023 13.018 12.8942 12.5095 13.092 12.0809C14.4081 9.22933 13.655 6.97987 12.5518 5.38019C12.1138 4.74521 11.6209 4.21649 11.18 3.80695C11.0999 4.088 10.9997 4.39262 10.8742 4.71284C10.696 5.16755 10.4662 5.65531 10.1704 6.15187C9.50801 7.26379 8.51483 8.41987 7.02982 9.34797C5.57752 10.2556 4.71646 12.6406 5.04885 15.2768C5.29944 17.2643 6.20241 19.1244 7.76396 20.256Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-xs sm:text-lg">Древесные Угли</h4>
+                        <p class="text-gray-400 text-[11px] sm:text-xs mt-0.5 leading-tight">Только настоящий огонь и дубовый уголь.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3.5 bg-dark-950 p-3.5 sm:p-6 rounded-2xl border border-dark-800">
+                    <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-flame-500/10 border border-flame-500/30 text-flame-500 flex items-center justify-center shrink-0">
+                        <svg class="w-7 h-7 sm:w-9 sm:h-9" fill="currentColor" viewBox="0 0 368.5 368.5">
+                            <path d="M184.25,340.16c-85.97,0-155.9-69.94-155.9-155.9S98.28,28.35,184.25,28.35s155.91,69.94,155.91,155.91S270.21,340.16,184.25,340.16z M184.25,43.99c-77.34,0-140.25,62.92-140.25,140.27s62.92,140.26,140.25,140.26c77.34,0,140.26-62.92,140.26-140.26S261.59,43.99,184.25,43.99z" />
+                            <path d="M184.25,318.04c-73.77,0-133.78-60.01-133.78-133.79S110.48,50.46,184.25,50.46c73.77,0,133.79,60.02,133.79,133.79S258.02,318.04,184.25,318.04z M184.25,55.68c-70.89,0-128.56,57.68-128.56,128.57c0,70.89,57.67,128.57,128.56,128.57s128.57-57.68,128.57-128.57C312.82,113.36,255.14,55.68,184.25,55.68z" />
+                            <path d="M239.7,162.61c-13.29,1.51-20.6,23.81-21.19,25.68c0.31-0.83,2.11-4.43,11.39-9.22c10.62-5.51,31.84,6.27,31.84,6.27c-9.78,8.61-27.77,9.4-42.45,7.82c-14.69-1.59-13.89-32.9-14.69-57.17c-0.83-24.28-5.73-21.93-5.73-21.93s0.82-10.99-9.78,39.15c-10.63,50.11-67.78,62.64-67.78,62.64c31.86,4.72,54.71-10.17,62.85-25.82c8.18-15.68,13.87-48.58,13.87-48.58c0,47.02,4.1,58.75,16.36,64.23c12.25,5.51,35.93-2.33,53.08-8.61c10.91-3.98,23.68-2.34,23.68-2.34l9.79-14.88c0,0-13.9,0.76-23.67-3.13C267.47,172.81,253.59,161.06,239.7,162.61z" />
+                            <path d="M135.18,191.6c3.28-7.82-2.45-50.15-2.45-61.12c0-10.94,4.07-17.21,4.07-17.21c-5.7-3.14-9.76-17.25-9.76-17.25c-1.66,3.92-7.36,12.53-7.36,12.53s16.33,77.59,5.7,86.95c-10.6,9.39-31.84,10.99-44.07,3.18c-12.26-7.85,0.8-32.93,0.8-32.93c-7.35,8.61-13.06,18.81-12.24,29.76c0.81,10.99,8.98,21.93,28.58,22.73C118.02,219.01,131.9,199.43,135.18,191.6z" />
+                            <path d="M159.68,154c8.97,6.26,13.88,25.86,13.88,25.86c4.9-43.87-35.1-56.4-35.1-56.4s-0.83,2.34,0,14.08C139.27,149.32,150.67,147.73,159.68,154z" />
+                            <path d="M115.22,230.67v15.86h18.34v-15.86h4.95v37.91h-4.95v-17.77h-18.34v17.77h-4.95v-37.91H115.22z" />
+                            <path d="M153.12,256.66l-3.94,11.92h-5.06l12.93-37.91h5.85l12.94,37.91h-5.23l-4.05-11.92H153.12z M165.61,252.83l-3.76-10.91c-0.85-2.48-1.41-4.72-1.97-6.92h-0.11c-0.56,2.19-1.13,4.56-1.91,6.86l-3.71,10.97H165.61z" />
+                            <path d="M181.37,230.67h4.95v33.8h16.19v4.11h-21.14V230.67z" />
+                            <path d="M214.1,256.66l-3.94,11.92h-5.06l12.93-37.91h5.85l12.94,37.91h-5.23l-4.05-11.92H214.1z M226.59,252.83l-3.76-10.91c-0.85-2.48-1.41-4.72-1.97-6.92h-0.11c-0.56,2.19-1.13,4.56-1.91,6.86l-3.71,10.97H226.59z" />
+                            <path d="M242.34,230.67h4.95v33.8h16.19v4.11h-21.14V230.67z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-xs sm:text-lg">Халяль Стандарт</h4>
+                        <p class="text-gray-400 text-[11px] sm:text-xs mt-0.5 leading-tight">Свежайшее мясо и фирменные специи.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3.5 bg-dark-950 p-3.5 sm:p-6 rounded-2xl border border-dark-800">
+                    <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-flame-500/10 border border-flame-500/30 text-flame-500 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" />
+                            <path d="M12 6V12" />
+                            <path d="M16.24 16.24L12 12" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-xs sm:text-lg">Быстрая Доставка</h4>
+                        <p class="text-gray-400 text-[11px] sm:text-xs mt-0.5 leading-tight">Термосумки сохраняют хрустящую корочку.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contacts" class="bg-dark-950 border-t border-dark-800 text-gray-400 pt-8 pb-20 md:pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6">
+            
+            <div class="space-y-2">
+                <a href="#" class="inline-block">
+                    <img id="footer-logo" src="https://raw.githubusercontent.com/Dimalikee/test/refs/heads/main/images%20(1).png" alt="ОТ ДОНЕР" class="h-10 w-auto object-contain" loading="lazy">
+                </a>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Сеть вкуснейших донеров. Готовим с любовью и страстью к огню!
+                </p>
+            </div>
+
+            <div>
+                <h5 class="text-white font-bold text-xs uppercase tracking-wider mb-2 border-l-2 border-flame-500 pl-2">График работы</h5>
+                <ul class="space-y-1 text-xs">
+                    <li>Пн - Чт: 10:00 - 01:00</li>
+                    <li class="text-flame-500 font-medium">Пт - Сб: 10:00 - 03:00 (Ночной)</li>
+                    <li>Вс: 10:00 - 01:00</li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-white font-bold text-xs uppercase tracking-wider mb-2 border-l-2 border-flame-500 pl-2">Контакты</h5>
+                <ul class="space-y-1 text-xs">
+                    <li id="footer-phone-text" class="text-white font-bold text-sm">+7 (708) 999-00-11</li>
+                    <li>ул. Абая 150/2</li>
+                    <li>доставка@otdoner.kz</li>
+                    <li id="site-visits-line" class="text-gray-500">Визитов: —</li>
+                    <li id="popular-food-line" class="text-gray-500">Хит: —</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-dark-900 pt-4 text-center sm:text-left text-[11px] text-gray-500">
+            © 2026 «<span id="footer-title">ОТ ДОНЕР</span> — КУХНЯ НА УГЛЯХ». Все права защищены.
+        </div>
+    </footer>
+
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-dark-900/95 backdrop-blur-lg border-t border-dark-800 py-1.5 px-3 md:hidden flex items-center justify-around pb-[calc(0.5rem+var(--sab))] shadow-2xl">
+        <a href="#menu" class="flex flex-col items-center text-gray-400 active:text-flame-500 hover:text-flame-500 text-[10px] font-bold gap-1 py-1 px-2 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span>Меню</span>
+        </a>
+
+        <button onclick="toggleCart()" class="relative flex flex-col items-center text-flame-500 font-bold text-[10px] gap-1 py-1 px-3 rounded-lg active:scale-95 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <span>Корзина</span>
+            <span id="mobile-cart-badge" class="absolute -top-0.5 right-1 bg-white text-flame-600 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-dark-900 hidden">0</span>
+        </button>
+
+        <a href="#about" class="flex flex-col items-center text-gray-400 active:text-flame-500 hover:text-flame-500 text-[10px] font-bold gap-1 py-1 px-2 rounded-lg">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0284 1.11813C9.69728 1.2952 9.53443 1.61638 9.49957 1.97965C9.48456 2.15538 9.46201 2.32986 9.43136 2.50363C9.3663 2.87248 9.24303 3.3937 9.01205 3.98313C8.5513 5.15891 7.67023 6.58926 5.96985 7.65195C3.57358 9.14956 2.68473 12.5146 3.06456 15.527C3.45234 18.6026 5.20871 21.7903 8.68375 22.9486C9.03 23.0641 9.41163 22.9817 9.67942 22.7337C10.0071 22.4303 10.0238 22.0282 9.94052 21.6223C9.87941 21.3244 9.74999 20.5785 9.74999 19.6875C9.74999 19.3992 9.76332 19.1034 9.79413 18.8068C10.3282 20.031 11.0522 20.9238 11.7758 21.5623C12.8522 22.5121 13.8694 22.8574 14.1722 22.9466C14.402 23.0143 14.6462 23.0185 14.8712 22.9284C17.5283 21.8656 19.2011 20.4232 20.1356 18.7742C21.068 17.1288 21.1993 15.3939 20.9907 13.8648C20.7833 12.3436 20.2354 10.9849 19.7537 10.0215C19.3894 9.29292 19.0534 8.77091 18.8992 8.54242C18.7101 8.26241 18.4637 8.04626 18.1128 8.00636C17.8332 7.97456 17.5531 8.06207 17.3413 8.24739L15.7763 9.61686C15.9107 7.44482 15.1466 5.61996 14.1982 4.24472C13.5095 3.24609 12.7237 2.47913 12.1151 1.96354C11.8094 1.70448 11.5443 1.50549 11.3525 1.36923C11.2564 1.30103 11.1784 1.24831 11.1224 1.21142C10.7908 0.99291 10.3931 0.923125 10.0284 1.11813ZM7.76396 20.256C7.75511 20.0744 7.74999 19.8842 7.74999 19.6875C7.75 18.6347 7.89677 17.3059 8.47802 16.0708C8.67271 15.6572 8.91614 15.254 9.21914 14.8753C9.47408 14.5566 9.89709 14.4248 10.2879 14.5423C10.6787 14.6598 10.959 15.003 10.9959 15.4094C11.2221 17.8977 12.2225 19.2892 13.099 20.0626C13.5469 20.4579 13.979 20.7056 14.292 20.8525C15.5 20.9999 17.8849 18.6892 18.3955 17.7882C19.0569 16.6211 19.1756 15.356 19.0091 14.1351C18.8146 12.7092 18.2304 11.3897 17.7656 10.5337L14.6585 13.2525C14.3033 13.5634 13.779 13.5835 13.401 13.3008C13.023 13.018 12.8942 12.5095 13.092 12.0809C14.4081 9.22933 13.655 6.97987 12.5518 5.38019C12.1138 4.74521 11.6209 4.21649 11.18 3.80695C11.0999 4.088 10.9997 4.39262 10.8742 4.71284C10.696 5.16755 10.4662 5.65531 10.1704 6.15187C9.50801 7.26379 8.51483 8.41987 7.02982 9.34797C5.57752 10.2556 4.71646 12.6406 5.04885 15.2768C5.29944 17.2643 6.20241 19.1244 7.76396 20.256Z" />
+            </svg>
+            <span>О нас</span>
+        </a>
+
+        <a id="mobile-phone-link" href="tel:+77089990011" class="flex flex-col items-center text-gray-400 active:text-flame-500 hover:text-flame-500 text-[10px] font-bold gap-1 py-1 px-2 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            <span>Звонок</span>
+        </a>
+    </div>
+
+    <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none transition-opacity duration-300 opacity-0">
+        <div id="cart-backdrop" onclick="toggleCart()" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
+
+        <div id="cart-panel" class="absolute top-0 right-0 bottom-0 w-full xs:max-w-md bg-dark-900 border-l border-dark-800 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 pointer-events-auto pb-[var(--sab)]">
+            
+            <div class="p-4 border-b border-dark-800 flex items-center justify-between bg-dark-950 pt-[calc(1rem+var(--sat))]">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-flame-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    <h3 class="font-heading font-black text-base sm:text-xl text-white uppercase">Ваш Заказ</h3>
+                </div>
+                <button onclick="toggleCart()" aria-label="Закрыть корзину" class="text-gray-400 hover:text-white p-2 rounded-xl active:bg-dark-800">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div id="cart-items-container" class="flex-grow overflow-y-auto p-3.5 sm:p-5 space-y-2.5">
+                <!-- Cart items rendered by JS -->
+            </div>
+
+            <div class="p-4 border-t border-dark-800 bg-dark-950 space-y-3">
+                <label class="flex items-center justify-between gap-3 bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 cursor-pointer hover:border-flame-500/50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" id="delivery-checkbox" onchange="toggleDelivery()" class="accent-flame-500 w-5 h-5">
+                        <span class="font-bold text-white text-sm">Доставка</span><p style="font-size: 10px; color: gray;">если отключить тогда будет самовызов.</p>
+                    </div>
+                    <span id="delivery-price-display" class="text-flame-500 font-mono font-bold text-sm">500 ₸</span>
+                </label>
+
+                <div class="space-y-1.5 text-xs sm:text-sm">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Сумма заказа:</span>
+                        <span id="cart-subtotal" class="text-white font-mono font-bold">0 ₸</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Доставка:</span>
+                        <span id="cart-shipping" class="text-flame-500 font-semibold">0 ₸</span>
+                    </div>
+                    <div class="flex justify-between text-sm sm:text-lg font-black text-white pt-2 border-t border-dark-800">
+                        <span>ИТОГО:</span>
+                        <span id="cart-final-total" class="text-flame-500 font-mono">0 ₸</span>
+                    </div>
+                </div>
+
+                <button id="checkout-btn" onclick="openCheckoutModal()" class="w-full bg-flame-600 hover:bg-flame-500 active:bg-flame-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold py-3.5 rounded-xl transition-all flame-glow text-center uppercase tracking-wider text-xs sm:text-sm active:scale-95">
+                    Оформить заказ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md hidden">
+        <div class="bg-dark-900 border-t sm:border border-dark-800 w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-4 xs:p-5 sm:p-7 relative shadow-2xl overflow-y-auto max-h-[92vh] sm:max-h-[90vh] pb-[calc(1.5rem+var(--sab))]">
+            <button onclick="closeCheckoutModal()" aria-label="Закрыть окно" class="absolute top-3.5 right-3.5 text-gray-400 hover:text-white p-2 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Step 1: Order Form -->
+            <div id="checkout-form-step">
+                <div class="flex items-center gap-3 mb-4 border-b border-dark-800 pb-3">
+                    <div class="p-2.5 rounded-xl bg-flame-500/10 border border-flame-500/30 text-flame-500">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-black text-lg sm:text-xl text-white uppercase">Оформление заказа</h3>
+                        <p class="text-xs text-gray-400">Итого к оплате: <span id="modal-total-price" class="text-flame-500 font-mono font-bold">0 ₸</span></p>
+                    </div>
+                </div>
+
+                <form onsubmit="handleOrderSubmit(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Ваше имя</label>
+                        <input id="order-name" type="text" required placeholder="Арман" class="w-full bg-dark-950 border border-dark-700 rounded-xl px-3.5 py-3 text-white text-sm focus:border-flame-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Номер телефона</label>
+                        <input id="order-phone" type="tel" required placeholder="+7 (777) 000-00-00" class="w-full bg-dark-950 border border-dark-700 rounded-xl px-3.5 py-3 text-white text-sm focus:border-flame-500 outline-none">
+                    </div>
+
+
+
+                    <div id="address-field">
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Адрес доставки</label>
+                        <input type="text" id="address-input" required placeholder="Улица, дом, квартира" class="w-full bg-dark-950 border border-dark-700 rounded-xl px-3.5 py-3 text-white text-sm focus:border-flame-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Комментарий к заказу</label>
+                        <textarea id="order-comment" placeholder="Без лука, побольше соуса..." class="w-full bg-dark-950 border border-dark-700 rounded-xl px-3.5 py-2.5 text-white text-sm focus:border-flame-500 outline-none h-16 resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white font-extrabold py-3.5 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all flame-glow mt-2">
+                        Подтвердить заказ
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Success Message -->
+            <div id="checkout-success-step" class="hidden text-center py-2 space-y-3">
+                <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-white uppercase">Заказ Принят!</h3>
+                <p class="text-xs sm:text-sm text-gray-300">
+                    Номер вашего заказа: <span id="order-id" class="text-flame-500 font-mono font-bold">#1001</span>
+                </p>
+                
+                <!-- Detailed Receipt -->
+                <div id="order-details-container" class="bg-dark-950 border border-dark-800 rounded-xl p-3 text-left space-y-2 text-xs">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <p class="text-xs text-gray-400">
+                    Мы уже начали готовить ваш донер!
+                </p>
+                <button onclick="closeCheckoutModal()" class="w-full bg-dark-800 hover:bg-dark-700 active:bg-dark-600 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition-colors">
+                    Отлично
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-16 sm:bottom-6 right-3 sm:right-6 left-3 sm:left-auto z-50 bg-flame-600 text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-xs sm:text-sm flex items-center justify-center sm:justify-start gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <svg class="w-5 h-5 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0284 1.11813C9.69728 1.2952 9.53443 1.61638 9.49957 1.97965C9.48456 2.15538 9.46201 2.32986 9.43136 2.50363C9.3663 2.87248 9.24303 3.3937 9.01205 3.98313C8.5513 5.15891 7.67023 6.58926 5.96985 7.65195C3.57358 9.14956 2.68473 12.5146 3.06456 15.527C3.45234 18.6026 5.20871 21.7903 8.68375 22.9486C9.03 23.0641 9.41163 22.9817 9.67942 22.7337C10.0071 22.4303 10.0238 22.0282 9.94052 21.6223C9.87941 21.3244 9.74999 20.5785 9.74999 19.6875C9.74999 19.3992 9.76332 19.1034 9.79413 18.8068C10.3282 20.031 11.0522 20.9238 11.7758 21.5623C12.8522 22.5121 13.8694 22.8574 14.1722 22.9466C14.402 23.0143 14.6462 23.0185 14.8712 22.9284C17.5283 21.8656 19.2011 20.4232 20.1356 18.7742C21.068 17.1288 21.1993 15.3939 20.9907 13.8648C20.7833 12.3436 20.2354 10.9849 19.7537 10.0215C19.3894 9.29292 19.0534 8.77091 18.8992 8.54242C18.7101 8.26241 18.4637 8.04626 18.1128 8.00636C17.8332 7.97456 17.5531 8.06207 17.3413 8.24739L15.7763 9.61686C15.9107 7.44482 15.1466 5.61996 14.1982 4.24472C13.5095 3.24609 12.7237 2.47913 12.1151 1.96354C11.8094 1.70448 11.5443 1.50549 11.3525 1.36923C11.2564 1.30103 11.1784 1.24831 11.1224 1.21142C10.7908 0.99291 10.3931 0.923125 10.0284 1.11813ZM7.76396 20.256C7.75511 20.0744 7.74999 19.8842 7.74999 19.6875C7.75 18.6347 7.89677 17.3059 8.47802 16.0708C8.67271 15.6572 8.91614 15.254 9.21914 14.8753C9.47408 14.5566 9.89709 14.4248 10.2879 14.5423C10.6787 14.6598 10.959 15.003 10.9959 15.4094C11.2221 17.8977 12.2225 19.2892 13.099 20.0626C13.5469 20.4579 13.979 20.7056 14.292 20.8525C15.5 20.9999 17.8849 18.6892 18.3955 17.7882C19.0569 16.6211 19.1756 15.356 19.0091 14.1351C18.8146 12.7092 18.2304 11.3897 17.7656 10.5337L14.6585 13.2525C14.3033 13.5634 13.779 13.5835 13.401 13.3008C13.023 13.018 12.8942 12.5095 13.092 12.0809C14.4081 9.22933 13.655 6.97987 12.5518 5.38019C12.1138 4.74521 11.6209 4.21649 11.18 3.80695C11.0999 4.088 10.9997 4.39262 10.8742 4.71284C10.696 5.16755 10.4662 5.65531 10.1704 6.15187C9.50801 7.26379 8.51483 8.41987 7.02982 9.34797C5.57752 10.2556 4.71646 12.6406 5.04885 15.2768C5.29944 17.2643 6.20241 19.1244 7.76396 20.256Z" />
+        </svg>
+        <span id="toast-message">Товар добавлен в корзину!</span>
+    </div>
+
+    <script>
+        // Supabase Credentials Hardcoded
+        const SUPABASE_URL = 'https://hucevbfupkllculloiom.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Y2V2YmZ1cGtsbGN1bGxvaW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MTI0ODksImV4cCI6MjEwNTM4ODQ4OX0.9HN9xg5-lsmRmMAEuPG7goML-ybX4iGj6pWdE4IuTdU';
+
+        let supabaseClient = null;
+        let isSupabaseActive = false;
+
+        // Default Initial Products Database (fallback if Supabase is unreachable)
+        const DEFAULT_PRODUCTS = [
+            // 1. КОМБО
+            {
+                id: 6,
+                name: 'Комбо "Огненный Сет"',
+                category: 'combos',
+                price: 3800,
+                spicy: 1,
+                badge: 'ВЫГОДА',
+                is_new: true,
+                is_top: true,
+                image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+                description: 'Донер Фирменный + Хрустящий картофель фри + Напиток 0.5L + Соус на выбор.',
+                tags: 'комбо, набор, выгодно'
+            },
+            {
+                id: 7,
+                name: 'Комбо "Двойной Удар"',
+                category: 'combos',
+                price: 5200,
+                spicy: 0,
+                badge: '2 ПЕРСОНЫ',
+                is_new: false,
+                is_top: true,
+                image: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f6?auto=format&fit=crop&w=600&q=80',
+                description: '2 Сочных Донера на выбор + 2 Порции картофеля фри + 2 Напитка 0.5L.'
+            },
+
+            // 2. ЕДА (ДОНЕРЫ И БУРГЕРЫ)
+            {
+                id: 1,
+                name: 'Донер "От Донер" Фирменный',
+                category: 'doners',
+                price: 2200,
+                spicy: 1,
+                badge: 'ХИТ',
+                is_new: false,
+                is_top: true,
+                image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=600&q=80',
+                description: 'Сочная говядина, томатно-чесночный соус, свежие томаты, огурцы и хрустящий фри внутри.'
+            },
+            {
+                id: 2,
+                name: 'Шаурма Куриная Классик',
+                category: 'doners',
+                price: 1800,
+                spicy: 0,
+                badge: 'ТОП',
+                is_new: false,
+                is_top: true,
+                image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80',
+                description: 'Сочное куриное филе, свежие овощи и фирменный белый соус в хрустящем лаваше.'
+            },
+            {
+                id: 3,
+                name: 'Донер Огненный Дьявол',
+                category: 'doners',
+                price: 2400,
+                spicy: 3,
+                badge: 'ОСТРОЕ',
+                is_new: true,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=600&q=80',
+                description: 'Двойное мясо, перец халапеньо, острый соус чили и расплавленный сыр.'
+            },
+            {
+                id: 4,
+                name: 'Бургер "Фирменный Огонь"',
+                category: 'burgers',
+                price: 2600,
+                spicy: 1,
+                badge: 'NEW',
+                is_new: true,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+                description: 'Сочная котлета из 100% говядины, карамелизованный лук и фирменный соус барбекю.'
+            },
+            {
+                id: 5,
+                name: 'Чизбургер Сочный',
+                category: 'burgers',
+                price: 2100,
+                spicy: 0,
+                badge: '',
+                is_new: false,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
+                description: 'Сочная котлета, двойной сыр Чеддер, соленые огурчики и свежие томаты.'
+            },
+
+            // 3. ДОБАВКИ (ЗАКУСКИ И СОУСЫ)
+            {
+                id: 8,
+                name: 'Картофель Фри Хрустящий',
+                category: 'snacks',
+                price: 900,
+                spicy: 0,
+                badge: '',
+                is_new: false,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80',
+                description: 'Золотистый хрустящий картофель с фирменной папричной специей.'
+            },
+            {
+                id: 9,
+                name: 'Наггетсы Сочные (6 шт)',
+                category: 'snacks',
+                price: 1200,
+                spicy: 0,
+                badge: '',
+                is_new: false,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80',
+                description: 'Кусочки нежного куриного филе в золотистой хрустящей панировке.'
+            },
+            {
+                id: 11,
+                name: 'Фирменный Соус "Огонь"',
+                category: 'sauces',
+                price: 300,
+                spicy: 1,
+                badge: 'MUST TRY',
+                is_new: false,
+                is_top: true,
+                image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=600&q=80',
+                description: 'Пикантный томатно-дымовой соус с чесноком и специями.'
+            },
+            {
+                id: 12,
+                name: 'Сырный Соус Premium',
+                category: 'sauces',
+                price: 300,
+                spicy: 0,
+                badge: '',
+                is_new: false,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?auto=format&fit=crop&w=600&q=80',
+                description: 'Густой насыщенный соус из отборного выдержанного сыра Чеддер.'
+            },
+
+            // 4. СОКИ И НАПИТКИ
+            {
+                id: 10,
+                name: 'Coca-Cola / Sprite 0.5L',
+                category: 'drinks',
+                price: 600,
+                spicy: 0,
+                badge: '',
+                is_new: false,
+                is_top: false,
+                image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80',
+                description: 'Ледяной освежающий напиток в фирменной бутылке.'
+            }
+        ];
+
+        let PRODUCTS = [...DEFAULT_PRODUCTS];
+
+        // Categories list
+        const CATEGORIES = [
+            { id: 'all', name: 'Все', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0284 1.11813C9.69728 1.2952 9.53443 1.61638 9.49957 1.97965C9.48456 2.15538 9.46201 2.32986 9.43136 2.50363C9.3663 2.87248 9.24303 3.3937 9.01205 3.98313C8.5513 5.15891 7.67023 6.58926 5.96985 7.65195C3.57358 9.14956 2.68473 12.5146 3.06456 15.527C3.45234 18.6026 5.20871 21.7903 8.68375 22.9486C9.03 23.0641 9.41163 22.9817 9.67942 22.7337C10.0071 22.4303 10.0238 22.0282 9.94052 21.6223C9.87941 21.3244 9.74999 20.5785 9.74999 19.6875C9.74999 19.3992 9.76332 19.1034 9.79413 18.8068C10.3282 20.031 11.0522 20.9238 11.7758 21.5623C12.8522 22.5121 13.8694 22.8574 14.1722 22.9466C14.402 23.0143 14.6462 23.0185 14.8712 22.9284C17.5283 21.8656 19.2011 20.4232 20.1356 18.7742C21.068 17.1288 21.1993 15.3939 20.9907 13.8648C20.7833 12.3436 20.2354 10.9849 19.7537 10.0215C19.3894 9.29292 19.0534 8.77091 18.8992 8.54242C18.7101 8.26241 18.4637 8.04626 18.1128 8.00636C17.8332 7.97456 17.5531 8.06207 17.3413 8.24739L15.7763 9.61686C15.9107 7.44482 15.1466 5.61996 14.1982 4.24472C13.5095 3.24609 12.7237 2.47913 12.1151 1.96354C11.8094 1.70448 11.5443 1.50549 11.3525 1.36923C11.2564 1.30103 11.1784 1.24831 11.1224 1.21142C10.7908 0.99291 10.3931 0.923125 10.0284 1.11813ZM7.76396 20.256C7.75511 20.0744 7.74999 19.8842 7.74999 19.6875C7.75 18.6347 7.89677 17.3059 8.47802 16.0708C8.67271 15.6572 8.91614 15.254 9.21914 14.8753C9.47408 14.5566 9.89709 14.4248 10.2879 14.5423C10.6787 14.6598 10.959 15.003 10.9959 15.4094C11.2221 17.8977 12.2225 19.2892 13.099 20.0626C13.5469 20.4579 13.979 20.7056 14.292 20.8525C15.5 20.9999 17.8849 18.6892 18.3955 17.7882C19.0569 16.6211 19.1756 15.356 19.0091 14.1351C18.8146 12.7092 18.2304 11.3897 17.7656 10.5337L14.6585 13.2525C14.3033 13.5634 13.779 13.5835 13.401 13.3008C13.023 13.018 12.8942 12.5095 13.092 12.0809C14.4081 9.22933 13.655 6.97987 12.5518 5.38019C12.1138 4.74521 11.6209 4.21649 11.18 3.80695C11.0999 4.088 10.9997 4.39262 10.8742 4.71284C10.696 5.16755 10.4662 5.65531 10.1704 6.15187C9.50801 7.26379 8.51483 8.41987 7.02982 9.34797C5.57752 10.2556 4.71646 12.6406 5.04885 15.2768C5.29944 17.2643 6.20241 19.1244 7.76396 20.256Z" />
+</svg>` },
+            { id: 'combos', name: 'Комбо', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 122.88 122.88">
+  <path d="M29.03,100.46l20.79-25.21l9.51,12.13L41,110.69C33.98,119.61,20.99,110.21,29.03,100.46L29.03,100.46z M53.31,43.05 c1.98-6.46,1.07-11.98-6.37-20.18L28.76,1c-2.58-3.03-8.66,1.42-6.12,5.09L37.18,24c2.75,3.34-2.36,7.76-5.2,4.32L16.94,9.8 c-2.8-3.21-8.59,1.03-5.66,4.7c4.24,5.1,10.8,13.43,15.04,18.53c2.94,2.99-1.53,7.42-4.43,3.69L6.96,18.32 c-2.19-2.38-5.77-0.9-6.72,1.88c-1.02,2.97,1.49,5.14,3.2,7.34L20.1,49.06c5.17,5.99,10.95,9.54,17.67,7.53 c1.03-0.31,2.29-0.94,3.64-1.77l44.76,57.78c2.41,3.11,7.06,3.44,10.08,0.93l0.69-0.57c3.4-2.83,3.95-8,1.04-11.34L50.58,47.16 C51.96,45.62,52.97,44.16,53.31,43.05L53.31,43.05z M65.98,55.65l7.37-8.94C63.87,23.21,99-8.11,116.03,6.29 C136.72,23.8,105.97,66,84.36,55.57l-8.73,11.09L65.98,55.65L65.98,55.65z" />
+</svg>` },
+            { id: 'doners', name: 'Донеры', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 512 512">
+  <path d="M247 16v23.14c3-.08 6-.14 9-.14s6 .06 9 .14V16h-18zm9 41c-38.8 0-73.9 7.82-98.8 17.4-12.4 4.79-22.3 10.06-28.7 14.64-5.6 4.07-7.1 7.73-7.4 7.14L128 142c25.3 6.6 48.3 6.2 70.7 1.9l3.4 17.6c-22.3 4.4-45.9 5.2-71.2-.3l22.6 150.7c12.4 5 28.7 6 42.7 6.3l-.4 18c-11.4-.2-25.6-.6-39.3-4.3l2.9 19.5c4.8 2.1 13.9 4.8 22.8 6.3 11.4 1.8 23.8 2.2 26.7 1.8l2.6 17.8c-8.1 1.2-19.6.2-32.2-1.9-5.8-.9-11.5-1.9-16.8-3.4l6.1 40.5c2.1 2.9 12.2 9.1 27.9 12.7 16.5 3.8 38 5.8 59.5 5.8s43-2 59.5-5.8c15.7-3.6 25.8-9.8 27.9-12.7l3.5-23.2c-6.7 2.5-13.8 4.4-20.9 5.7-16 3-31.6 3.4-43 1.1l3.4-17.6c7.6 1.4 22.3 1.4 36.3-1.2 10.3-1.9 20.3-5.4 27.4-9.6l17.2-114.4c-48.2 17.3-82.8 15.3-116 14.6l.4-18c36 .8 68.4 3.2 118.7-16.9l16.3-108.9c-41 20.4-94.6 20.8-140.6 16.8l1.6-18c49.6 4.5 106.7 1.9 142.4-21.5l.8-5.22c-.3.59-1.8-3.07-7.4-7.14-6.4-4.58-16.3-9.85-28.7-14.64-24.9-9.58-60-17.4-98.8-17.4zm-76.2 145c5.9 1.4 22.6 2.8 39.6 3.1 17 .2 35.2-.5 45.5-2.2l2.8 17.8c-12.6 2-30.9 2.6-48.5 2.4-17.7-.3-33.8-1.2-43.6-3.5l4.2-17.6zm146.5 104.3l2.8 8.6 2.8 8.6c-29.3 9.5-68.1 12.2-95.8 6.7l1.7-8.8 1.7-8.8c23.3 4.5 61.3 2 86.8-6.3zM247 448.9V496h18v-47.1c-3 .1-6 .1-9 .1s-6 0-9-.1z" />
+</svg>` },
+            { id: 'burgers', name: 'Бургеры', svg: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10a8 8 0 0116 0v2H4v-2zm0 6h16v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1z"/></svg>` },
+            { id: 'snacks', name: 'Закуски', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 1024 1024">
+  <path d="M128 352.576V352a288 288 0 0 1 491.072-204.224 192 192 0 0 1 274.24 204.48 64 64 0 0 1 57.216 74.24C921.6 600.512 850.048 710.656 736 756.992V800a96 96 0 0 1-96 96H384a96 96 0 0 1-96-96v-43.008c-114.048-46.336-185.6-156.48-214.528-330.496A64 64 0 0 1 128 352.64zm64-.576h64a160 160 0 0 1 320 0h64a224 224 0 0 0-448 0zm128 0h192a96 96 0 0 0-192 0zm439.424 0h68.544A128.256 128.256 0 0 0 704 192c-15.36 0-29.952 2.688-43.52 7.616 11.328 18.176 20.672 37.76 27.84 58.304A64.128 64.128 0 0 1 759.424 352zM672 768H352v32a32 32 0 0 0 32 32h256a32 32 0 0 0 32-32v-32zm-342.528-64h365.056c101.504-32.64 165.76-124.928 192.896-288H136.576c27.136 163.072 91.392 255.36 192.896 288z" />
+</svg>` },
+            { id: 'sauces', name: 'Соусы', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 510.4 510.4">
+  <path d="M335.2,144v-9.6c0-33.6-19.2-38.4-30.4-38.4h-33.6V16c0-9.6-6.4-16-16-16c-9.6,0-16,6.4-16,16v80H220 c-17.6,0-44.8,16-44.8,38.4v14.4c-17.6,8-32,22.4-32,41.6V464c0,27.2,28.8,46.4,54.4,46.4h129.6c24,0,40-19.2,40-46.4V190.4 C367.2,164.8,354.4,147.2,335.2,144z M207.2,134.4c1.6-1.6,8-6.4,12.8-6.4h83.2c0,0,0,3.2,0,6.4v9.6h-96V134.4z M175.2,240h104 c1.6,0,8,0,8,16v144c0,16-4.8,16-8,16h-104V240z M335.2,465.6c0,14.4-4.8,14.4-8,14.4H197.6c-11.2,0-22.4-9.6-22.4-14.4V448h104 c19.2,0,40-12.8,40-48V256c0-28.8-16-48-40-48h-104v-17.6c0-6.4,11.2-14.4,22.4-14.4h129.6c1.6,0,8,0,8,14.4V465.6z" />
+</svg>` },
+            { id: 'drinks', name: 'Напитки', svg: `<svg class="w-4 h-4 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
+  <path d="M17,24H7c-0.5,0-0.9-0.4-1-0.9l-2-16c0-0.3,0.1-0.6,0.2-0.8C4.4,6.1,4.7,6,5,6h14c0.3,0,0.6,0.1,0.7,0.3 C19.9,6.6,20,6.8,20,7.1l-2,16C17.9,23.6,17.5,24,17,24z M7.9,22h8.2l1.8-14H6.1L7.9,22z" />
+  <path d="M12,21c-0.1,0-0.2,0-0.3-0.1c-0.5-0.2-0.8-0.8-0.6-1.3l7-19c0.2-0.5,0.8-0.8,1.3-0.6c0.5,0.2,0.8,0.8,0.6,1.3l-7,19 C12.8,20.8,12.4,21,12,21z" />
+  <path d="M15,16c-0.5,0-0.8,0-1.2-0.1c-1.1-0.1-2-0.3-2.7-0.6C10.3,15.2,9.8,15,9,15c-0.7,0-1.7,0.2-2.8,0.4 c-0.5,0.1-1.1-0.2-1.2-0.7c-0.1-0.5,0.2-1.1,0.7-1.2C6.6,13.3,7.9,13,9,13c1,0,1.9,0.2,2.6,0.5c0.7,0.2,1.4,0.4,2.3,0.5 c1,0.1,2.5,0,3.9-0.2c0.5-0.1,1.1,0.3,1.2,0.8c0.1,0.5-0.3,1.1-0.8,1.2C17.1,15.9,16,16,15,16z" />
+</svg>` }
+        ];
+
+        let cart = []; 
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let isSubmittingOrder = false;
+        let siteOnline = true;
+        let headerFoodId = null;
+        let siteUseSchedule = false;
+        let siteSchedule = null;
+        let deliveryPrice = 500;
+        let deliveryEnabled = false;
+
+        window.onload = function() {
+            initSupabase();
+            renderCategories();
+            renderProducts();
+            updateCartUI();
+            setInterval(refreshScheduleOnline, 30000);
+            initLazyLoading();
+            
+            // Manual refresh function accessible from console
+            window.refreshSite = function() {
+                console.log('Manual refresh triggered');
+                fetchProductsFromSupabase();
+                loadSiteSettings();
+                loadStatistics();
+            };
+        };
+
+        function initLazyLoading() {
+            // Check if browser supports native lazy loading
+            if ('loading' in HTMLImageElement.prototype) {
+                // Browser supports native lazy loading
+                console.log('Native lazy loading supported');
+            } else {
+                // Fallback to Intersection Observer for older browsers
+                const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+                
+                if ('IntersectionObserver' in window) {
+                    const imageObserver = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                img.src = img.dataset.src || img.src;
+                                img.classList.remove('lazy');
+                                imageObserver.unobserve(img);
+                            }
+                        });
+                    });
+                    
+                    lazyImages.forEach(img => {
+                        imageObserver.observe(img);
+                    });
+                } else {
+                    // Fallback for very old browsers - load all images
+                    lazyImages.forEach(img => {
+                        img.src = img.dataset.src || img.src;
+                    });
+                }
+            }
+        }
+
+        function initSupabase() {
+            if (window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    isSupabaseActive = true;
+                    fetchProductsFromSupabase();
+                    loadSiteSettings();
+                    subscribeToRealtimeProducts();
+                    trackSiteVisit();
+                    loadStatistics();
+                } catch (e) {
+                    console.error('Supabase init error:', e);
+                }
+            }
+        }
+
+        function mapFoodRow(item) {
+            const isTop = Boolean(item.top_or_not);
+            const stock = item.availability_cost_food !== undefined && item.availability_cost_food !== null
+                ? Number(item.availability_cost_food)
+                : null;
+
+            return {
+                id: item.id,
+                name: item.name_food || 'Без названия',
+                description: item.description_food || '',
+                price: Number(item.price || 0),
+                image: item.url_photo_food || 'https://placehold.co/600x400/1e1e1e/ff4d1c?text=ОТ+ДОНЕР',
+                category: item.type_food || 'doners',
+                spicy: Number(item.spice_level || 0),
+                badge: isTop ? 'ТОП' : '',
+                is_new: false,
+                tags: item.tag_food || '',
+                is_top: isTop,
+                cost: stock,
+                data: item.data
+            };
+        }
+
+        async function fetchProductsFromSupabase() {
+            if (!supabaseClient) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('foods')
+                    .select('id, name_food, description_food, url_photo_food, availability_cost_food, top_or_not, spice_level, type_food, price, data, tag_food')
+                    .order('id', { ascending: true });
+
+                if (error) {
+                    console.error('Supabase foods fetch error:', error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    PRODUCTS = data.map(mapFoodRow);
+                    renderProducts();
+                    applyHeaderFood();
+                }
+            } catch (err) {
+                console.error('Failed to load from Supabase:', err);
+            }
+        }
+
+        async function trackSiteVisit() {
+            if (!supabaseClient) return;
+            try {
+                if (sessionStorage.getItem('otdoner_visit_counted') === '1') {
+                    await loadStatistics();
+                    return;
+                }
+                const { data, error } = await supabaseClient.rpc('increment_site_visits');
+                if (error) {
+                    console.error('Visit counter error:', error);
+                    return;
+                }
+                sessionStorage.setItem('otdoner_visit_counted', '1');
+                updateVisitLabel(data);
+            } catch (err) {
+                console.error('Failed to count visit:', err);
+            }
+        }
+
+        async function loadStatistics() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('statistics')
+                    .select('how_much_person_enter_to_site, popular_food')
+                    .eq('id', 1)
+                    .maybeSingle();
+
+                if (error || !data) return;
+                updateVisitLabel(data.how_much_person_enter_to_site);
+                updatePopularFoodLabel(data.popular_food);
+            } catch (err) {
+                console.error('Failed to load statistics:', err);
+            }
+        }
+
+        function updateVisitLabel(count) {
+            const el = document.getElementById('site-visits-line');
+            if (el && count !== undefined && count !== null) {
+                el.innerText = `Визитов: ${Number(count).toLocaleString()}`;
+            }
+        }
+
+        function updatePopularFoodLabel(popular) {
+            const el = document.getElementById('popular-food-line');
+            if (!el) return;
+            if (typeof popular === 'string' && popular.trim()) {
+                el.innerText = `Хит: ${popular.trim()}`;
+                return;
+            }
+            if (!popular || typeof popular !== 'object') {
+                el.innerText = 'Хит: —';
+                return;
+            }
+            const entries = Object.entries(popular);
+            if (!entries.length) {
+                el.innerText = 'Хит: —';
+                return;
+            }
+            entries.sort((a, b) => Number(b[1]) - Number(a[1]));
+            el.innerText = `Хит: ${entries[0][0]}`;
+        }
+
+        async function loadSiteSettings() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('site')
+                    .select('title_site, logo_site_url, word_or_not, header_food_id, contact_phone, use_schedule, week_schedule, delivery_price')
+                    .eq('id', 1)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Error loading site settings:', error);
+                    return;
+                }
+                
+                if (!data) {
+                    console.warn('No site settings found');
+                    return;
+                }
+                
+                console.log('Site settings loaded:', data);
+                applySiteSettings(data);
+            } catch (err) {
+                console.error('Failed to load site settings:', err);
+            }
+        }
+
+        function applySiteSettings(data) {
+            const title = (data.title_site || '').trim() || 'ОТ ДОНЕР';
+            const logo = (data.logo_site_url || '').trim();
+            siteUseSchedule = Boolean(data.use_schedule);
+            siteSchedule = data.week_schedule || null;
+            deliveryPrice = data.delivery_price !== null && data.delivery_price !== undefined ? Number(data.delivery_price) : 500;
+            
+            console.log('Applying site settings:', {
+                useSchedule: siteUseSchedule,
+                wordOrNot: data.word_or_not,
+                currentSiteOnline: siteOnline
+            });
+            
+            if (siteUseSchedule) {
+                siteOnline = isOpenBySchedule(siteSchedule);
+                console.log('Schedule-based online status:', siteOnline);
+                if (supabaseClient && siteOnline !== Boolean(data.word_or_not)) {
+                    console.log('Updating word_or_not in database to match schedule');
+                    supabaseClient.from('site').update({ word_or_not: siteOnline }).eq('id', 1);
+                }
+            } else {
+                siteOnline = Boolean(data.word_or_not);
+                console.log('Manual online status:', siteOnline);
+            }
+            headerFoodId = data.header_food_id || null;
+
+            const phone = (data.contact_phone || '').trim() || '+7 (708) 999-00-11';
+            const telHref = 'tel:' + phone.replace(/[^\d+]/g, '');
+            const headerPhoneLink = document.getElementById('header-phone-link');
+            const headerPhoneText = document.getElementById('header-phone-text');
+            const footerPhoneText = document.getElementById('footer-phone-text');
+            const mobilePhoneLink = document.getElementById('mobile-phone-link');
+            if (headerPhoneLink) headerPhoneLink.href = telHref;
+            if (headerPhoneText) headerPhoneText.textContent = phone;
+            if (footerPhoneText) footerPhoneText.textContent = phone;
+            if (mobilePhoneLink) mobilePhoneLink.href = telHref;
+
+            document.title = title;
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle) pageTitle.textContent = title;
+
+            const footerTitle = document.getElementById('footer-title');
+            if (footerTitle) footerTitle.textContent = title;
+
+            if (logo) {
+                const headerLogo = document.getElementById('header-logo');
+                const footerLogo = document.getElementById('footer-logo');
+                const favicon = document.getElementById('page-favicon');
+                if (headerLogo) {
+                    headerLogo.src = logo;
+                    headerLogo.alt = title;
+                }
+                if (footerLogo) {
+                    footerLogo.src = logo;
+                    footerLogo.alt = title;
+                }
+                if (favicon) favicon.href = logo;
+            }
+
+            const badge = document.getElementById('online-badge');
+            const badgeText = document.getElementById('online-badge-text');
+            const badgePing = document.getElementById('online-badge-ping');
+            const badgeDot = document.getElementById('online-badge-dot');
+
+            if (badge && badgeText && badgePing && badgeDot) {
+                if (siteOnline) {
+                    badge.className = 'flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0';
+                    badgePing.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+                    badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500';
+                    badgeText.textContent = 'Онлайн';
+                    console.log('Badge updated to ONLINE');
+                } else {
+                    badge.className = 'flex items-center gap-1.5 bg-gray-500/10 border border-gray-500/30 text-gray-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0';
+                    badgePing.className = 'absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-40';
+                    badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-gray-500';
+                    badgeText.textContent = 'Офлайн';
+                    console.log('Badge updated to OFFLINE');
+                }
+            }
+
+            updateCartUI();
+            applyHeaderFood();
+        }
+
+        function refreshScheduleOnline() {
+            if (!siteUseSchedule) return;
+            const next = isOpenBySchedule(siteSchedule);
+            if (next === siteOnline) return;
+            siteOnline = next;
+            if (supabaseClient) {
+                supabaseClient.from('site').update({ word_or_not: siteOnline }).eq('id', 1);
+            }
+            loadSiteSettings();
+        }
+
+        function applyHeaderFood() {
+            const nameEl = document.getElementById('hero-food-name');
+            const priceEl = document.getElementById('hero-food-price');
+            const imageEl = document.getElementById('hero-food-image');
+            const addBtn = document.getElementById('hero-food-add');
+            if (!nameEl || !priceEl || !imageEl || !addBtn) return;
+
+            let product = headerFoodId
+                ? PRODUCTS.find(p => String(p.id) === String(headerFoodId))
+                : null;
+            if (!product) product = PRODUCTS.find(p => p.is_top) || PRODUCTS[0];
+            if (!product) return;
+
+            nameEl.textContent = product.name;
+            priceEl.textContent = `${Number(product.price).toLocaleString()} ₸`;
+            imageEl.src = product.image;
+            imageEl.alt = product.name;
+            addBtn.onclick = function () { addToCartDirect(product.id); };
+            addBtn.disabled = Boolean(product.cost !== null && product.cost !== undefined && product.cost <= 0);
+        }
+
+        function isWebSocketAllowed() {
+            try {
+                if (!('WebSocket' in window)) return false;
+                const testWs = new WebSocket('wss://localhost:0');
+                testWs.close();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function subscribeToRealtimeProducts() {
+            if (!supabaseClient) return;
+
+            if (!isWebSocketAllowed()) {
+                console.warn('WebSockets restricted in sandbox. Polling fallback active.');
+                setInterval(() => {
+                    fetchProductsFromSupabase();
+                    loadSiteSettings();
+                }, 30000);
+                return;
+            }
+
+            try {
+                supabaseClient
+                    .channel('public:foods-and-site')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'foods' }, payload => {
+                        fetchProductsFromSupabase();
+                    })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'site' }, payload => {
+                        loadSiteSettings();
+                    })
+                    .subscribe((status, err) => {
+                        if (err || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                            console.warn('Realtime channel warning. Fallback to HTTP polling.');
+                        }
+                    });
+            } catch (err) {
+                setInterval(() => {
+                    fetchProductsFromSupabase();
+                    loadSiteSettings();
+                }, 30000);
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('category-pills');
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="setCategory('${cat.id}')" class="px-3 py-1.5 xs:px-3.5 xs:py-2 rounded-xl font-bold text-xs sm:text-sm transition-all duration-150 flex items-center gap-1.5 border shrink-0 active:scale-95 ${
+                    currentCategory === cat.id 
+                    ? 'bg-flame-600 text-white border-flame-500 flame-glow-sm' 
+                    : 'bg-dark-900 text-gray-400 border-dark-800 hover:text-white hover:border-dark-700'
+                }">
+                    <span class="${currentCategory === cat.id ? 'text-white' : 'text-flame-500'} shrink-0">${cat.svg}</span>
+                    <span>${cat.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function setCategory(catId) {
+            currentCategory = catId;
+            renderCategories();
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+
+            const filtered = PRODUCTS.filter(product => {
+                const matchesCat = currentCategory === 'all' || product.category === currentCategory;
+                const matchesSearch = product.name.toLowerCase().includes(searchQuery) ||
+                                      product.description.toLowerCase().includes(searchQuery) ||
+                                      (product.tags && product.tags.toLowerCase().includes(searchQuery));
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(product => {
+                const cartItem = cart.find(item => item.id === product.id);
+                const qty = cartItem ? cartItem.qty : 0;
+                
+                let spicyIconsHtml = '';
+                if (product.spicy > 0) {
+                    let flameDots = '';
+                    for(let i = 0; i < product.spicy; i++) {
+                        flameDots += `<svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 32 32">
+  <path d="M26.99,10.361c0.021,0.028,0.042,0.055,0.063,0.083c0.008,0.009,0.015,0.019,0.023,0.029C27.047,10.435,27.019,10.398,26.99,10.361z M23.446,12.357c-0.18,0-0.356,0.064-0.475,0.206c-0.446,0.532-0.883,1.077-1.365,1.576c-0.435,0.452-0.877,0.898-1.306,1.356c-0.414,0.44-0.799,0.908-1.217,1.344c-0.228,0.237-0.454,0.477-0.693,0.703c-0.243,0.23-0.503,0.442-0.758,0.659c-0.311,0.264-0.27,0.786,0,1.056c0.296,0.296,0.758,0.277,1.056,0c0.232-0.213,0.475-0.414,0.703-0.63c0.237-0.226,0.465-0.461,0.693-0.699c0.429-0.444,0.818-0.923,1.219-1.392c0.401-0.473,0.82-0.927,1.247-1.375c0.492-0.516,0.957-1.056,1.418-1.599c0.125-0.148,0.207-0.3,0.207-0.499c0-0.186-0.076-0.366-0.207-0.499C23.836,12.431,23.64,12.357,23.446,12.357z M29.998,6.202c0.019,0.188-0.087,0.444-0.184,0.6c-0.053,0.089-0.112,0.173-0.175,0.256c-0.137,0.18-0.279,0.357-0.44,0.516c-0.15,0.15-0.302,0.298-0.458,0.446c-0.285,0.27-0.573,0.537-0.866,0.797c-0.3,0.265-0.617,0.507-0.932,0.751c-0.125,0.098-0.251,0.194-0.377,0.291c0.165,0.193,0.33,0.384,0.488,0.583c0.146,0.192,0.285,0.388,0.425,0.587c0.222,0.315,0.327,0.71,0.349,1.094c0.015,0.254-0.017,0.497-0.061,0.752c-0.027,0.154-0.059,0.315-0.114,0.463c-0.159,0.437-0.37,0.853-0.587,1.263c-0.199,0.376-0.423,0.75-0.678,1.092c-0.473,0.64-1.042,1.189-1.604,1.747c-0.564,0.558-1.124,1.118-1.699,1.665c-1.17,1.115-2.397,2.186-3.678,3.174c-0.902,0.714-1.727,1.51-2.602,2.256c-0.363,0.31-0.731,0.609-1.113,0.896c-0.328,0.247-0.672,0.477-1.006,0.716c-0.321,0.228-0.646,0.45-0.978,0.663c-0.355,0.226-0.712,0.475-1.094,0.653c-0.404,0.19-0.82,0.361-1.253,0.477c-0.41,0.112-0.824,0.194-1.244,0.26c-0.946,0.148-1.918,0.163-2.865,0.011c-0.403-0.065-0.786-0.169-1.173-0.302c-0.416-0.146-0.834-0.298-1.227-0.503c-0.372-0.192-0.731-0.416-1.058-0.682c-0.129-0.106-0.254-0.218-0.384-0.327c-0.137-0.114-0.279-0.222-0.403-0.349c-0.342-0.351-0.587-0.744-0.771-1.194c-0.063-0.152-0.12-0.306-0.156-0.465c-0.046-0.211-0.101-0.444-0.076-0.659c0.034-0.306,0.085-0.566,0.222-0.839c0.146-0.29,0.355-0.513,0.608-0.708c0.074-0.057,0.144-0.101,0.226-0.144c0.087-0.046,0.273-0.133,0.389-0.152c0.142-0.023,0.283-0.049,0.427-0.044C4.026,21.85,4.161,21.882,4.3,21.93c0.144,0.051,0.292,0.122,0.429,0.194c0.262,0.137,0.519,0.285,0.785,0.413c0.173,0.064,0.349,0.118,0.525,0.173c0.231,0.073,0.466,0.148,0.705,0.198c0.059,0.002,0.116,0,0.174-0.003c0.446-0.086,0.881-0.234,1.303-0.404c0.432-0.189,0.836-0.436,1.216-0.715c0.901-0.753,1.67-1.664,2.405-2.576c0.38-0.507,0.739-1.025,1.098-1.547c0.372-0.539,0.765-1.065,1.122-1.614c0.239-0.366,0.477-0.735,0.687-1.118c0.199-0.363,0.393-0.727,0.598-1.088c0.431-0.756,0.875-1.504,1.314-2.254c0.44-0.75,0.951-1.449,1.462-2.151c0.366-0.503,0.718-1.046,1.177-1.47c0.22-0.203,0.458-0.404,0.721-0.547c0.249-0.133,0.507-0.249,0.767-0.355c0.234-0.093,0.467-0.159,0.718-0.194c0.159-0.023,0.316-0.03,0.473-0.03c0.098,0,0.195,0.003,0.294,0.005c0.128,0.004,0.25,0.038,0.357,0.096c0.061,0.004,0.122,0.011,0.186,0.022c0.281,0.046,0.539,0.169,0.794,0.292c0.154,0.074,0.313,0.146,0.456,0.239c0.181,0.12,0.357,0.25,0.516,0.398c0.067-0.083,0.135-0.165,0.201-0.248c0.301-0.418,0.561-0.862,0.777-1.331c0.001-0.002,0.002-0.004,0.003-0.006c0.137-0.328,0.241-0.668,0.374-0.999c0.15-0.37,0.302-0.758,0.532-1.086c0.158-0.222,0.334-0.422,0.606-0.503c0.091-0.028,0.18-0.04,0.267-0.04c0.168,0,0.331,0.047,0.496,0.122c0.158,0.07,0.306,0.161,0.452,0.254c0.336,0.209,0.667,0.456,0.953,0.733c0.169,0.163,0.317,0.351,0.446,0.547c0.047,0.072,0.093,0.146,0.131,0.222c0.046,0.095,0.097,0.194,0.125,0.294C29.977,5.967,29.988,6.085,29.998,6.202z M26.151,12.15c-0.009-0.041-0.019-0.082-0.031-0.123c-0.085-0.162-0.193-0.311-0.302-0.459c-0.163-0.199-0.336-0.388-0.505-0.581c-0.177-0.202-0.356-0.387-0.558-0.557c-0.279-0.206-0.565-0.404-0.828-0.631c-0.231-0.2-0.412-0.446-0.639-0.65c-0.196-0.135-0.404-0.244-0.62-0.342c-0.109-0.04-0.217-0.07-0.336-0.09c-0.203-0.033-0.4-0.201-0.516-0.374c-0.035,0.001-0.07,0.002-0.106,0.005c-0.183,0.038-0.357,0.091-0.531,0.158c-0.228,0.1-0.447,0.207-0.655,0.344c-0.24,0.2-0.448,0.425-0.645,0.67c-0.263,0.354-0.521,0.711-0.778,1.069c-0.275,0.38-0.556,0.758-0.797,1.16c-0.439,0.731-0.858,1.475-1.28,2.216c-0.425,0.748-0.797,1.529-1.247,2.263c-0.454,0.741-0.963,1.445-1.458,2.157c-0.52,0.75-1.039,1.506-1.629,2.204c-0.537,0.636-1.075,1.285-1.669,1.874c-0.636,0.632-1.348,1.177-2.174,1.538c-0.403,0.177-0.822,0.332-1.247,0.45c-0.108,0.028-0.218,0.065-0.328,0.084c-0.197,0.032-0.408,0.085-0.609,0.063c-0.294-0.032-0.579-0.087-0.864-0.165c-0.406-0.11-0.809-0.213-1.192-0.385c-0.264-0.118-0.516-0.261-0.774-0.388c-0.007,0.008-0.015,0.015-0.022,0.023c-0.005,0.009-0.011,0.018-0.016,0.028c-0.008,0.025-0.016,0.051-0.023,0.077c-0.001,0.03-0.001,0.061,0,0.092c0.028,0.132,0.066,0.26,0.113,0.387c0.058,0.119,0.122,0.232,0.195,0.341c0.149,0.168,0.313,0.315,0.487,0.458c0.132,0.11,0.26,0.225,0.391,0.336c0.351,0.249,0.73,0.454,1.122,0.634c0.542,0.218,1.094,0.396,1.672,0.493c0.683,0.078,1.368,0.092,2.051,0.016c0.634-0.095,1.256-0.24,1.854-0.471c0.602-0.277,1.166-0.645,1.715-1.016c0.529-0.357,1.059-0.716,1.57-1.098c0.614-0.491,1.201-1.009,1.791-1.528c0.659-0.577,1.323-1.143,2.016-1.679c-0.055,0.042-0.11,0.085-0.165,0.127c1.185-0.949,2.311-1.965,3.414-3.006c0.552-0.52,1.107-1.039,1.641-1.58c0.442-0.447,0.888-0.898,1.282-1.389c0.423-0.585,0.782-1.215,1.078-1.874c0.069-0.186,0.117-0.375,0.154-0.569C26.158,12.358,26.158,12.254,26.151,12.15z M28.384,6.17c-0.031-0.053-0.064-0.105-0.099-0.156c-0.151-0.172-0.323-0.324-0.501-0.47c-0.073-0.052-0.147-0.102-0.223-0.15c-0.071,0.132-0.135,0.267-0.195,0.405c-0.099,0.248-0.186,0.502-0.288,0.75c-0.137,0.327-0.283,0.646-0.448,0.961c-0.135,0.256-0.277,0.513-0.442,0.752c-0.001,0.002-0.003,0.004-0.004,0.006c0.357-0.28,0.704-0.568,1.033-0.879c0.384-0.361,0.772-0.723,1.108-1.131C28.345,6.229,28.365,6.2,28.384,6.17z" />
+</svg>`;
+                    }
+                    spicyIconsHtml = `<span class="bg-red-950/80 text-flame-500 text-[8px] sm:text-[9px] font-bold px-1 py-0.5 rounded border border-red-900/60 flex items-center gap-0.5">${flameDots}</span>`;
+                }
+
+                const hasLimit = product.cost !== null && product.cost !== undefined;
+                const isSoldOut = hasLimit && product.cost <= 0;
+
+                return `
+                    <div class="bg-dark-900 border border-dark-800 hover:border-flame-500/50 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 group relative">
+                        
+                        <div>
+                            <div class="flex justify-between items-start mb-1.5 gap-1 min-h-[22px]">
+                                <div class="flex flex-wrap gap-1 items-center">
+                                    ${product.badge ? `<span class="bg-flame-600 text-white text-[8px] xs:text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">${product.badge}</span>` : ''}
+                                    ${spicyIconsHtml}
+                                </div>
+                                ${hasLimit ? `<span class="text-[8px] xs:text-[9px] font-bold ${isSoldOut ? 'text-red-500' : 'text-amber-400'} bg-dark-950 px-1 py-0.5 rounded border border-dark-800 shrink-0">Ост: ${product.cost}</span>` : ''}
+                            </div>
+
+                            <!-- Image Container -->
+                            <div class="w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl bg-dark-950 border border-dark-800 overflow-hidden mb-2 group-hover:border-flame-500/40 transition-colors">
+                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isSoldOut ? 'opacity-40 grayscale' : ''}" loading="lazy">
+                            </div>
+
+                            <h3 class="font-heading font-bold text-white text-xs xs:text-sm sm:text-base leading-snug line-clamp-1 group-hover:text-flame-500 transition-colors">
+                                ${product.name}
+                            </h3>
+                            <p class="text-gray-400 text-[10px] xs:text-[11px] sm:text-xs mt-0.5 sm:mt-1 line-clamp-2 leading-tight xs:leading-normal">
+                                ${product.description}
+                            </p>
+                        </div>
+
+                        <div class="mt-2.5 pt-2 border-t border-dark-800 flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+                            <div>
+                                <span class="text-xs xs:text-sm sm:text-lg font-black text-white font-mono">${product.price.toLocaleString()} ₸</span>
+                            </div>
+
+                            <div class="w-full xs:w-auto">
+                                ${isSoldOut ? `
+                                    <button disabled class="w-full xs:w-auto bg-dark-800 text-gray-500 font-bold text-[10px] sm:text-xs py-1.5 px-2 rounded-lg sm:rounded-xl cursor-not-allowed">
+                                        Распродано
+                                    </button>
+                                ` : qty > 0 ? `
+                                    <div class="flex items-center justify-between bg-dark-950 border border-flame-500/60 rounded-lg sm:rounded-xl p-0.5 gap-1">
+                                        <button onclick="updateQty(${product.id}, -1)" aria-label="Уменьшить количество" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-dark-800 active:bg-flame-600 text-white font-bold text-sm flex items-center justify-center active:scale-90 transition-all">-</button>
+                                        <span class="font-mono font-bold text-white text-xs sm:text-sm px-1">${qty}</span>
+                                        <button onclick="updateQty(${product.id}, 1)" aria-label="Увеличить количество" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-flame-600 active:bg-flame-500 text-white font-bold text-sm flex items-center justify-center active:scale-90 transition-all">+</button>
+                                    </div>
+                                ` : `
+                                    <button onclick="updateQty(${product.id}, 1)" class="w-full xs:w-auto bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl transition-all flame-glow-sm flex items-center justify-center gap-1 active:scale-95">
+                                        <span>+ В корзину</span>
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateQty(productId, change) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const index = cart.findIndex(item => item.id === productId);
+            const currentQty = index > -1 ? cart[index].qty : 0;
+
+            if (change > 0 && product.cost !== null && product.cost !== undefined) {
+                if (currentQty + change > product.cost) {
+                    showToast(`Максимум доступно: ${product.cost} шт.`);
+                    return;
+                }
+            }
+
+            if (index > -1) {
+                cart[index].qty += change;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+            } else if (change > 0) {
+                cart.push({ id: productId, product: product, qty: 1 });
+                showToast(`"${product.name}" добавлен!`);
+            }
+
+            renderProducts();
+            updateCartUI();
+        }
+
+        function addToCartDirect(productId) {
+            updateQty(productId, 1);
+            toggleCart(true);
+        }
+
+        function toggleDelivery() {
+            const checkbox = document.getElementById('delivery-checkbox');
+            deliveryEnabled = checkbox.checked;
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items-container');
+            const totalHeader = document.getElementById('cart-total-header');
+            const countBadge = document.getElementById('cart-count-badge');
+            const mobileBadge = document.getElementById('mobile-cart-badge');
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const finalTotalEl = document.getElementById('cart-final-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const shippingEl = document.getElementById('cart-shipping');
+            const deliveryPriceDisplay = document.getElementById('delivery-price-display');
+            const deliveryCheckbox = document.getElementById('delivery-checkbox');
+
+            const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+            const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+            const shipping = (totalCount > 0 && deliveryEnabled) ? deliveryPrice : 0;
+            const finalTotal = subtotal + shipping;
+
+            if (totalHeader) totalHeader.innerText = `${subtotal.toLocaleString()} ₸`;
+            if (subtotalEl) subtotalEl.innerText = `${subtotal.toLocaleString()} ₸`;
+            if (shippingEl) shippingEl.innerText = `${shipping.toLocaleString()} ₸`;
+            if (finalTotalEl) finalTotalEl.innerText = `${finalTotal.toLocaleString()} ₸`;
+            if (deliveryPriceDisplay) deliveryPriceDisplay.innerText = `${deliveryPrice.toLocaleString()} ₸`;
+            if (deliveryCheckbox) deliveryCheckbox.checked = deliveryEnabled;
+            
+            if (totalCount > 0) {
+                if (countBadge) { countBadge.innerText = totalCount; countBadge.classList.remove('hidden'); }
+                if (mobileBadge) { mobileBadge.innerText = totalCount; mobileBadge.classList.remove('hidden'); }
+            } else {
+                if (countBadge) countBadge.classList.add('hidden');
+                if (mobileBadge) mobileBadge.classList.add('hidden');
+            }
+
+            if (!cartItemsContainer) return;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="text-center py-10 text-gray-500 space-y-3">
+                        <svg class="w-12 h-12 text-gray-600 mx-auto opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                        </svg>
+                        <p class="font-medium text-xs sm:text-sm text-gray-400">Корзина пуста</p>
+                        <p class="text-[11px] text-gray-600">Выберите вкуснейшие блюда из нашего меню</p>
+                    </div>
+                `;
+                if (checkoutBtn) checkoutBtn.disabled = true;
+            } else {
+                if (checkoutBtn) checkoutBtn.disabled = !siteOnline;
+                cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="bg-dark-950 border border-dark-800 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img src="${item.product.image}" alt="${item.product.name}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border border-dark-700 shrink-0" loading="lazy">
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-white text-xs leading-tight truncate">${item.product.name}</h4>
+                                <div class="text-flame-500 font-mono text-xs font-bold mt-0.5">${(item.product.price * item.qty).toLocaleString()} ₸</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-dark-900 border border-dark-700 rounded-lg p-1 shrink-0">
+                            <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 rounded bg-dark-800 active:bg-flame-600 text-white font-bold text-xs flex items-center justify-center active:scale-90 transition-all">-</button>
+                            <span class="font-mono font-bold text-white text-xs px-1">${item.qty}</span>
+                            <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 rounded bg-flame-600 active:bg-flame-500 text-white font-bold text-xs flex items-center justify-center active:scale-90 transition-all">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleCart(forceOpen) {
+            const drawer = document.getElementById('cart-drawer');
+            const panel = document.getElementById('cart-panel');
+            if (!drawer || !panel) return;
+
+            const isOpen = !drawer.classList.contains('pointer-events-none');
+            const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+
+            if (shouldOpen) {
+                drawer.classList.remove('pointer-events-none', 'opacity-0');
+                panel.classList.remove('translate-x-full');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                drawer.classList.add('pointer-events-none', 'opacity-0');
+                panel.classList.add('translate-x-full');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) return;
+            if (!siteOnline) {
+                showToast('Сейчас офлайн. Заказы временно недоступны.');
+                return;
+            }
+            isSubmittingOrder = false;
+            toggleCart(false);
+            const modal = document.getElementById('checkout-modal');
+            const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+            const shipping = deliveryEnabled ? deliveryPrice : 0;
+            document.getElementById('modal-total-price').innerText = `${(subtotal + shipping).toLocaleString()} ₸`;
+            
+            const form = document.querySelector('#checkout-form-step form');
+            if (form) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Подтвердить заказ';
+                }
+            }
+
+            // Показываем/скрываем поле адреса в зависимости от доставки
+            toggleAddressField(deliveryEnabled);
+
+            document.getElementById('checkout-form-step').classList.remove('hidden');
+            document.getElementById('checkout-success-step').classList.add('hidden');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkout-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function toggleAddressField(show) {
+            const addressField = document.getElementById('address-field');
+            const addressInput = document.getElementById('address-input');
+            if (addressField && addressInput) {
+                if (show) {
+                    addressField.classList.remove('hidden');
+                    addressInput.required = true;
+                } else {
+                    addressField.classList.add('hidden');
+                    addressInput.required = false;
+                }
+            }
+        }
+
+        async function handleOrderSubmit(e) {
+            e.preventDefault();
+            
+            if (isSubmittingOrder || cart.length === 0) return;
+            if (!siteOnline) {
+                showToast('Сейчас офлайн. Заказы временно недоступны.');
+                return;
+            }
+            isSubmittingOrder = true;
+
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Оформляем...';
+            }
+
+            try {
+                const customerName = document.getElementById('order-name').value.trim();
+                const phone = document.getElementById('order-phone').value.trim();
+                const deliveryType = deliveryEnabled ? 'delivery' : 'pickup';
+                const address = deliveryEnabled ? document.getElementById('address-input').value : 'Самовывоз';
+                const comment = (document.getElementById('order-comment').value || '').trim();
+
+                const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+                const shipping = deliveryEnabled ? deliveryPrice : 0;
+                const finalTotal = subtotal + shipping;
+
+                const orderItems = cart.map(item => ({
+                    id: item.id,
+                    name: item.product.name,
+                    price: item.product.price,
+                    qty: item.qty,
+                    total: item.product.price * item.qty
+                }));
+
+                if (!supabaseClient) {
+                    showToast('Нет связи с базой. Заказ не сохранён.');
+                    return;
+                }
+
+                const orderText = [
+                    deliveryType === 'delivery' ? `Доставка: ${address}` : 'Самовывоз',
+                    comment ? `Комментарий: ${comment}` : ''
+                ].filter(Boolean).join('\n');
+
+                const { data: savedId, error } = await supabaseClient.rpc('submit_customer_order', {
+                    p_name: customerName,
+                    p_phone: phone,
+                    p_text: orderText,
+                    p_list_foods: orderItems,
+                    p_price: finalTotal
+                });
+
+                if (error || !savedId) {
+                    console.error('Supabase order error:', error);
+                    showToast('Не удалось сохранить заказ. Запустите SQL fix_orders_and_popular.sql');
+                    return;
+                }
+
+                const orderId = '#' + savedId;
+                await fetchProductsFromSupabase();
+                await loadStatistics();
+
+                document.getElementById('order-id').innerText = orderId;
+                const detailsContainer = document.getElementById('order-details-container');
+                detailsContainer.innerHTML = `
+                    <div class="border-b border-dark-800 pb-2 mb-2">
+                        <p class="font-bold text-white">Покупатель: <span class="text-gray-300 font-normal">${customerName} (${phone})</span></p>
+                        <p class="font-bold text-white">Способ получения: <span class="text-gray-300 font-normal">${deliveryType === 'delivery' ? 'Доставка (' + address + ')' : 'Самовывоз'}</span></p>
+                        ${comment ? `<p class="font-bold text-white">Комментарий: <span class="text-gray-300 font-normal">${comment}</span></p>` : ''}
+                    </div>
+                    <div class="space-y-1 mb-2">
+                        <p class="font-bold text-gray-400 uppercase text-[10px]">Блюда в заказе:</p>
+                        ${orderItems.map(item => `
+                            <div class="flex justify-between text-gray-200">
+                                <span class="truncate pr-2">${item.name} x${item.qty}</span>
+                                <span class="font-mono font-bold shrink-0">${item.total.toLocaleString()} ₸</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="border-t border-dark-800 pt-2 flex justify-between font-bold text-white text-xs sm:text-sm">
+                        <span>Итого к оплате:</span>
+                        <span class="text-flame-500 font-mono">${finalTotal.toLocaleString()} ₸</span>
+                    </div>
+                `;
+
+                cart = [];
+                renderProducts();
+                updateCartUI();
+
+                document.getElementById('checkout-form-step').classList.add('hidden');
+                document.getElementById('checkout-success-step').classList.remove('hidden');
+            } finally {
+                isSubmittingOrder = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Подтвердить заказ';
+                }
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2200);
+        }
+
+        function showAutoUpdateNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shadow-lg z-50 animate-pulse';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
