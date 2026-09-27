@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title id="page-title">ОТ ДОНЕР — Кухня на углях | Доставка сочного фастфуда</title>
     <!-- Browser Favicon (Website Icon) -->
-    <link id="page-favicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dimalikee/test/refs/heads/main/images%20(1).png">
+    <link id="page-favicon" rel="icon" type="image/png" href="">
     <!-- iOS PWA Icon -->
     <link rel="apple-touch-icon" href="https://hucevbfupkllculloiom.supabase.co/storage/v1/object/public/app/20260926_1801411.png">
     <link rel="apple-touch-icon" sizes="152x152" href="https://hucevbfupkllculloiom.supabase.co/storage/v1/object/public/app/20260926_1801411.png">
@@ -784,6 +784,7 @@
             initSupabase();
             renderCategories();
             renderProducts();
+            loadCartFromLocalStorage();
             updateCartUI();
             setInterval(refreshScheduleOnline, 30000);
             initLazyLoading();
@@ -798,6 +799,9 @@
                 loadSiteSettings();
                 loadStatistics();
             };
+
+            // Save cart when user leaves the page
+            window.addEventListener('beforeunload', saveCartToLocalStorage);
         };
 
         function initLazyLoading() {
@@ -890,6 +894,8 @@
                     PRODUCTS = data.map(mapFoodRow);
                     renderProducts();
                     applyHeaderFood();
+                    // Validate cart against new products from database
+                    loadCartFromLocalStorage();
                 }
             } catch (err) {
                 console.error('Failed to load from Supabase:', err);
@@ -1287,6 +1293,7 @@
                 showToast(`"${product.name}" добавлен!`);
             }
 
+            saveCartToLocalStorage();
             renderProducts();
             updateCartUI();
         }
@@ -1573,6 +1580,7 @@
                 `;
 
                 cart = [];
+                saveCartToLocalStorage();
                 renderProducts();
                 updateCartUI();
 
@@ -1606,6 +1614,57 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+
+        function saveCartToLocalStorage() {
+            try {
+                const cartData = cart.map(item => ({
+                    id: item.id,
+                    qty: item.qty
+                }));
+                localStorage.setItem('otdoner_cart', JSON.stringify(cartData));
+            } catch (e) {
+                console.error('Error saving cart to localStorage:', e);
+            }
+        }
+
+        function loadCartFromLocalStorage() {
+            try {
+                const savedCart = localStorage.getItem('otdoner_cart');
+                if (!savedCart) return;
+
+                const cartData = JSON.parse(savedCart);
+                if (!Array.isArray(cartData) || cartData.length === 0) return;
+
+                // Validate cart items against current products
+                const validCart = [];
+                for (const cartItem of cartData) {
+                    const product = PRODUCTS.find(p => p.id === cartItem.id);
+                    if (product) {
+                        // Check if product is still available (if cost limit exists)
+                        const hasLimit = product.cost !== null && product.cost !== undefined;
+                        const isSoldOut = hasLimit && product.cost <= 0;
+                        
+                        if (!isSoldOut) {
+                            // Check if quantity is within limit
+                            if (hasLimit && cartItem.qty > product.cost) {
+                                cartItem.qty = product.cost;
+                            }
+                            validCart.push({
+                                id: cartItem.id,
+                                product: product,
+                                qty: cartItem.qty
+                            });
+                        }
+                    }
+                }
+
+                cart = validCart;
+                renderProducts();
+            } catch (e) {
+                console.error('Error loading cart from localStorage:', e);
+                cart = [];
+            }
         }
     </script>
 </body>
