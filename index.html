@@ -20,6 +20,10 @@
     <meta name="msapplication-TileColor" content="#060606">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
+
+    <!-- Resource hints: fastest connection to data & photo hosts -->
+    <link rel="preconnect" href="https://hucevbfupkllculloiom.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -152,6 +156,165 @@
         .pb-safe {
             padding-bottom: calc(4.5rem + var(--sab));
         }
+
+        /* Local loading overlays (hero food photo & products grid) */
+        .loader-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(6, 6, 6, 0.65);
+            border-radius: inherit;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .loader-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-overlay.loader-hide,
+        .products-skeleton.loader-hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 8px solid rgb(29, 29, 29);
+            border-right-color: rgb(232, 58, 28);
+            animation: l2 1s infinite linear;
+        }
+        @keyframes l2 {to{transform: rotate(1turn)}}
+
+        /* Hero photo skeleton loader (shimmer + icon) */
+        .photo-loader {
+            position: absolute;
+            inset: 0;
+            z-index: 25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #232323 50%, #1a1a1a 100%);
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+        .photo-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .photo-loader__shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 0, 0.18), rgba(255, 255, 255, 0.12), transparent);
+            filter: blur(6px);
+            animation: photoShimmer 1.3s infinite ease-in-out;
+        }
+        @keyframes photoShimmer {
+            0%   { transform: translateX(-120%) skewX(-18deg); }
+            100% { transform: translateX(320%) skewX(-18deg); }
+        }
+        .photo-loader__icon {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            color: rgba(255, 77, 28, 0.75);
+            animation: photoPulse 1.4s infinite ease-in-out;
+        }
+        @keyframes photoPulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.9); }
+            50%      { opacity: 1; transform: scale(1.05); }
+        }
+
+        /* Online/offline badge skeleton loader (same shimmer as photo loader) */
+        .badge-skeleton {
+            position: relative;
+            display: inline-block;
+            width: 58px;
+            height: 10px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #232323 50%, #1a1a1a 100%);
+            opacity: 1;
+            transition: opacity 0.45s ease;
+        }
+        .badge-skeleton.fading {
+            opacity: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .badge-skeleton::after,
+        .sk::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 0, 0.18), rgba(255, 255, 255, 0.12), transparent);
+            filter: blur(6px);
+            animation: photoShimmer 1.3s infinite ease-in-out;
+        }
+        @keyframes softFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .badge-fade-in {
+            animation: softFadeIn 0.45s ease;
+        }
+        .photo-reveal {
+            animation: softFadeIn 0.45s ease;
+        }
+
+        /* Menu cards skeleton grid (same shimmer language as photo loader) */
+        .products-skeleton {
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+        .sk {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #232323 50%, #1a1a1a 100%);
+        }
+
+        /* Scroll reveal for menu cards (first render only) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .reveal.revealed {
+            opacity: 1;
+            transform: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        /* Repeated "ОТ ДОНЕР" watermark tiling the whole hero background (even brick grid) */
+        .hero-wordmark {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+            background-image:
+                url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='360'%20height='120'%20viewBox='0%200%20360%20120'%3E%3Ctext%20x='180'%20y='78'%20text-anchor='middle'%20font-family='Arial%20Black,%20Arial,%20sans-serif'%20font-weight='900'%20font-size='52'%20fill='%23ff2a00'%20fill-opacity='0.14'%3E%D0%9E%D0%A2%20%D0%94%D0%9E%D0%9D%D0%95%D0%A0%3C/text%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='360'%20height='120'%20viewBox='0%200%20360%20120'%3E%3Ctext%20x='180'%20y='78'%20text-anchor='middle'%20font-family='Arial%20Black,%20Arial,%20sans-serif'%20font-weight='900'%20font-size='52'%20fill='%23ff2a00'%20fill-opacity='0.09'%3E%D0%9E%D0%A2%20%D0%94%D0%9E%D0%9D%D0%95%D0%A0%3C/text%3E%3C/svg%3E");
+            background-repeat: repeat, repeat;
+            background-size: 360px 120px, 360px 120px;
+            background-position: 0 0, 180px 60px;
+        }
     </style>
 </head>
 <body class="bg-dark-950 text-gray-100 min-h-screen flex flex-col pb-safe md:pb-0 selection:bg-flame-500 selection:text-white antialiased">
@@ -165,12 +328,15 @@
                     <img id="header-logo" src="https://raw.githubusercontent.com/Dimalikee/test/refs/heads/main/images%20(1).png" alt="ОТ ДОНЕР" class="h-9 xs:h-11 sm:h-14 w-auto object-contain animated-flame filter drop-shadow-[0_0_10px_rgba(255,42,0,0.5)] group-hover:scale-105 transition-transform" loading="eager">
                 </a>
 
-                <div id="online-badge" class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0">
-                    <span class="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
-                        <span id="online-badge-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span id="online-badge-dot" class="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
+                <div id="online-badge" class="relative flex items-center gap-1.5 bg-gray-500/10 border border-gray-500/30 text-gray-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0 min-w-[86px] justify-center sm:min-w-[96px]">
+                    <span id="online-badge-skeleton" class="badge-skeleton" aria-hidden="true"></span>
+                    <span id="online-badge-content" class="hidden items-center gap-1.5">
+                        <span class="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                            <span id="online-badge-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span id="online-badge-dot" class="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500"></span>
+                        </span>
+                        <span id="online-badge-text" class="font-bold tracking-wide uppercase text-[9px] xs:text-[10px] sm:text-[11px]"></span>
                     </span>
-                    <span id="online-badge-text" class="font-bold tracking-wide uppercase text-[9px] xs:text-[10px] sm:text-[11px]">Онлайн</span>
                 </div>
             </div>
 
@@ -206,6 +372,9 @@
         <div class="absolute inset-0 opacity-20 pointer-events-none">
             <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-[280px] xs:w-[350px] sm:w-[600px] h-[280px] xs:h-[350px] sm:h-[600px] bg-flame-500 rounded-full blur-[80px] sm:blur-[140px]"></div>
         </div>
+
+        <!-- Repeated "ОТ ДОНЕР" watermark background -->
+        <div class="hero-wordmark" aria-hidden="true"></div>
 
         <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10 grid md:grid-cols-2 gap-5 sm:gap-10 items-center">
             
@@ -254,16 +423,24 @@
 
                     <!-- Real Photo Container -->
                     <div class="relative w-full h-36 xs:h-44 sm:h-56 rounded-xl overflow-hidden mb-2.5 sm:mb-3 border border-dark-700/80 z-10">
-                        <img id="hero-food-image" src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80" alt="Донер От Донер" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="eager">
+                        <img id="hero-food-image" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="eager" fetchpriority="high" decoding="async">
                         <div class="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent"></div>
+                        <div class="photo-loader" id="hero-photo-loader" aria-hidden="true">
+                            <div class="photo-loader__shimmer"></div>
+                            <svg class="photo-loader__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+                                <circle cx="8.5" cy="9.5" r="1.5" stroke-width="1.5"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 16l-5-5L5 21"/>
+                            </svg>
+                        </div>
                     </div>
 
                     <div class="z-10 flex justify-between items-center border-t border-dark-700/80 pt-2.5">
                         <div>
-                            <div id="hero-food-name" class="text-[10px] sm:text-xs text-gray-400">Фирменный "От Донер"</div>
-                            <div id="hero-food-price" class="text-sm xs:text-base sm:text-xl font-black text-white font-mono">2 200 ₸</div>
+                            <div id="hero-food-name" class="text-[10px] sm:text-xs text-gray-400">&nbsp;</div>
+                            <div id="hero-food-price" class="text-sm xs:text-base sm:text-xl font-black text-white font-mono">&nbsp;</div>
                         </div>
-                        <button id="hero-food-add" onclick="addToCartDirect(1)" aria-label="Добавить блюдо с шапки в корзину" class="bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white p-2 sm:p-3 px-3 rounded-xl transition-colors flame-glow-sm active:scale-95 flex items-center gap-1.5">
+                        <button id="hero-food-add" disabled aria-label="Добавить блюдо с шапки в корзину" class="bg-flame-600 hover:bg-flame-500 active:bg-flame-700 text-white p-2 sm:p-3 px-3 rounded-xl transition-colors flame-glow-sm active:scale-95 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             <span class="text-xs font-bold">В корзину</span>
                         </button>
@@ -305,8 +482,56 @@
         </div>
 
         <!-- 2-column Grid on Mobile, 3-column on Tablet, 4-column on Desktop -->
-        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 xs:gap-3.5 sm:gap-6">
-            <!-- Dynamically populated via JavaScript -->
+        <div id="products-area" class="relative min-h-[180px]">
+            <div id="products-skeleton" class="products-skeleton grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 xs:gap-3.5 sm:gap-6" data-loader aria-hidden="true">
+                <div class="bg-dark-900 border border-dark-800 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex flex-col gap-2">
+                    <div class="sk h-[18px] w-2/5 rounded"></div>
+                    <div class="sk w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl"></div>
+                    <div class="sk h-3.5 w-3/4 rounded"></div>
+                    <div class="sk h-2.5 w-full rounded"></div>
+                    <div class="sk h-2.5 w-2/3 rounded"></div>
+                    <div class="flex items-center justify-between mt-1 gap-2">
+                        <div class="sk h-4 w-14 rounded"></div>
+                        <div class="sk h-8 w-20 sm:w-24 rounded-lg sm:rounded-xl"></div>
+                    </div>
+                </div>
+                <div class="bg-dark-900 border border-dark-800 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex flex-col gap-2">
+                    <div class="sk h-[18px] w-1/3 rounded"></div>
+                    <div class="sk w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl"></div>
+                    <div class="sk h-3.5 w-2/3 rounded"></div>
+                    <div class="sk h-2.5 w-full rounded"></div>
+                    <div class="sk h-2.5 w-1/2 rounded"></div>
+                    <div class="flex items-center justify-between mt-1 gap-2">
+                        <div class="sk h-4 w-12 rounded"></div>
+                        <div class="sk h-8 w-20 sm:w-24 rounded-lg sm:rounded-xl"></div>
+                    </div>
+                </div>
+                <div class="hidden md:flex bg-dark-900 border border-dark-800 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex-col gap-2">
+                    <div class="sk h-[18px] w-2/5 rounded"></div>
+                    <div class="sk w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl"></div>
+                    <div class="sk h-3.5 w-3/4 rounded"></div>
+                    <div class="sk h-2.5 w-full rounded"></div>
+                    <div class="sk h-2.5 w-2/3 rounded"></div>
+                    <div class="flex items-center justify-between mt-1 gap-2">
+                        <div class="sk h-4 w-14 rounded"></div>
+                        <div class="sk h-8 w-24 rounded-lg sm:rounded-xl"></div>
+                    </div>
+                </div>
+                <div class="hidden lg:flex bg-dark-900 border border-dark-800 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex-col gap-2">
+                    <div class="sk h-[18px] w-1/3 rounded"></div>
+                    <div class="sk w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl"></div>
+                    <div class="sk h-3.5 w-2/3 rounded"></div>
+                    <div class="sk h-2.5 w-full rounded"></div>
+                    <div class="sk h-2.5 w-1/2 rounded"></div>
+                    <div class="flex items-center justify-between mt-1 gap-2">
+                        <div class="sk h-4 w-12 rounded"></div>
+                        <div class="sk h-8 w-24 rounded-lg sm:rounded-xl"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 xs:gap-3.5 sm:gap-6">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
         </div>
 
         <!-- Empty Search State -->
@@ -586,163 +811,8 @@
         let supabaseClient = null;
         let isSupabaseActive = false;
 
-        // Default Initial Products Database (fallback if Supabase is unreachable)
-        const DEFAULT_PRODUCTS = [
-            // 1. КОМБО
-            {
-                id: 6,
-                name: 'Комбо "Огненный Сет"',
-                category: 'combos',
-                price: 3800,
-                spicy: 1,
-                badge: 'ВЫГОДА',
-                is_new: true,
-                is_top: true,
-                image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
-                description: 'Донер Фирменный + Хрустящий картофель фри + Напиток 0.5L + Соус на выбор.',
-                tags: 'комбо, набор, выгодно'
-            },
-            {
-                id: 7,
-                name: 'Комбо "Двойной Удар"',
-                category: 'combos',
-                price: 5200,
-                spicy: 0,
-                badge: '2 ПЕРСОНЫ',
-                is_new: false,
-                is_top: true,
-                image: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f6?auto=format&fit=crop&w=600&q=80',
-                description: '2 Сочных Донера на выбор + 2 Порции картофеля фри + 2 Напитка 0.5L.'
-            },
 
-            // 2. ЕДА (ДОНЕРЫ И БУРГЕРЫ)
-            {
-                id: 1,
-                name: 'Донер "От Донер" Фирменный',
-                category: 'doners',
-                price: 2200,
-                spicy: 1,
-                badge: 'ХИТ',
-                is_new: false,
-                is_top: true,
-                image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=600&q=80',
-                description: 'Сочная говядина, томатно-чесночный соус, свежие томаты, огурцы и хрустящий фри внутри.'
-            },
-            {
-                id: 2,
-                name: 'Шаурма Куриная Классик',
-                category: 'doners',
-                price: 1800,
-                spicy: 0,
-                badge: 'ТОП',
-                is_new: false,
-                is_top: true,
-                image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80',
-                description: 'Сочное куриное филе, свежие овощи и фирменный белый соус в хрустящем лаваше.'
-            },
-            {
-                id: 3,
-                name: 'Донер Огненный Дьявол',
-                category: 'doners',
-                price: 2400,
-                spicy: 3,
-                badge: 'ОСТРОЕ',
-                is_new: true,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=600&q=80',
-                description: 'Двойное мясо, перец халапеньо, острый соус чили и расплавленный сыр.'
-            },
-            {
-                id: 4,
-                name: 'Бургер "Фирменный Огонь"',
-                category: 'burgers',
-                price: 2600,
-                spicy: 1,
-                badge: 'NEW',
-                is_new: true,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
-                description: 'Сочная котлета из 100% говядины, карамелизованный лук и фирменный соус барбекю.'
-            },
-            {
-                id: 5,
-                name: 'Чизбургер Сочный',
-                category: 'burgers',
-                price: 2100,
-                spicy: 0,
-                badge: '',
-                is_new: false,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
-                description: 'Сочная котлета, двойной сыр Чеддер, соленые огурчики и свежие томаты.'
-            },
-
-            // 3. ДОБАВКИ (ЗАКУСКИ И СОУСЫ)
-            {
-                id: 8,
-                name: 'Картофель Фри Хрустящий',
-                category: 'snacks',
-                price: 900,
-                spicy: 0,
-                badge: '',
-                is_new: false,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80',
-                description: 'Золотистый хрустящий картофель с фирменной папричной специей.'
-            },
-            {
-                id: 9,
-                name: 'Наггетсы Сочные (6 шт)',
-                category: 'snacks',
-                price: 1200,
-                spicy: 0,
-                badge: '',
-                is_new: false,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80',
-                description: 'Кусочки нежного куриного филе в золотистой хрустящей панировке.'
-            },
-            {
-                id: 11,
-                name: 'Фирменный Соус "Огонь"',
-                category: 'sauces',
-                price: 300,
-                spicy: 1,
-                badge: 'MUST TRY',
-                is_new: false,
-                is_top: true,
-                image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=600&q=80',
-                description: 'Пикантный томатно-дымовой соус с чесноком и специями.'
-            },
-            {
-                id: 12,
-                name: 'Сырный Соус Premium',
-                category: 'sauces',
-                price: 300,
-                spicy: 0,
-                badge: '',
-                is_new: false,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?auto=format&fit=crop&w=600&q=80',
-                description: 'Густой насыщенный соус из отборного выдержанного сыра Чеддер.'
-            },
-
-            // 4. СОКИ И НАПИТКИ
-            {
-                id: 10,
-                name: 'Coca-Cola / Sprite 0.5L',
-                category: 'drinks',
-                price: 600,
-                spicy: 0,
-                badge: '',
-                is_new: false,
-                is_top: false,
-                image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80',
-                description: 'Ледяной освежающий напиток в фирменной бутылке.'
-            }
-        ];
-
-        let PRODUCTS = [...DEFAULT_PRODUCTS];
+        let PRODUCTS = [];
 
         // Categories list
         const CATEGORIES = [
@@ -788,6 +858,7 @@
             updateCartUI();
             setInterval(refreshScheduleOnline, 30000);
             initLazyLoading();
+            initHeroPhotoLoader();
             
             // Initialize delivery button state (default to delivery)
             selectDeliveryType('delivery');
@@ -802,7 +873,49 @@
 
             // Save cart when user leaves the page
             window.addEventListener('beforeunload', saveCartToLocalStorage);
+
+            // Safety net: never let the loaders stick if products fetch stalls
+            setTimeout(() => {
+                hidePageLoader();
+                hideHeroPhotoLoader();
+                updateOnlineBadge();
+            }, 8000);
         };
+
+        function hidePageLoader() {
+            document.querySelectorAll('[data-loader]').forEach(overlay => {
+                if (overlay.classList.contains('loader-hide')) return;
+                overlay.classList.add('loader-hide');
+                overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+            });
+        }
+
+        function showHeroPhotoLoader() {
+            const el = document.getElementById('hero-photo-loader');
+            const img = document.getElementById('hero-food-image');
+            if (el) el.classList.remove('hidden');
+            if (img) img.classList.remove('photo-reveal');
+        }
+
+        function hideHeroPhotoLoader() {
+            const el = document.getElementById('hero-photo-loader');
+            const img = document.getElementById('hero-food-image');
+            const wasVisible = el && !el.classList.contains('hidden');
+            if (el) el.classList.add('hidden');
+            if (img && wasVisible) {
+                img.classList.remove('photo-reveal');
+                void img.offsetWidth;
+                img.classList.add('photo-reveal');
+            }
+        }
+
+        function initHeroPhotoLoader() {
+            const img = document.getElementById('hero-food-image');
+            if (!img) return;
+            img.addEventListener('load', hideHeroPhotoLoader);
+            img.addEventListener('error', hideHeroPhotoLoader);
+            if (img.currentSrc && img.complete) hideHeroPhotoLoader();
+        }
 
         function initLazyLoading() {
             // Check if browser supports native lazy loading
@@ -864,6 +977,7 @@
                 name: item.name_food || 'Без названия',
                 description: item.description_food || '',
                 price: Number(item.price || 0),
+                sale_price: item.sale_price !== null && item.sale_price !== undefined ? Number(item.sale_price) : null,
                 image: item.url_photo_food || 'https://placehold.co/600x400/1e1e1e/ff4d1c?text=ОТ+ДОНЕР',
                 category: item.type_food || 'doners',
                 spicy: Number(item.spice_level || 0),
@@ -876,13 +990,22 @@
             };
         }
 
+        function hasSale(product) {
+            return product.sale_price !== null && product.sale_price !== undefined
+                && product.sale_price > 0 && product.sale_price < product.price;
+        }
+
+        function getEffectivePrice(product) {
+            return hasSale(product) ? product.sale_price : product.price;
+        }
+
         async function fetchProductsFromSupabase() {
             if (!supabaseClient) return;
 
             try {
                 const { data, error } = await supabaseClient
                     .from('foods')
-                    .select('id, name_food, description_food, url_photo_food, availability_cost_food, top_or_not, spice_level, type_food, price, data, tag_food')
+                    .select('id, name_food, description_food, url_photo_food, availability_cost_food, top_or_not, spice_level, type_food, price, sale_price, data, tag_food')
                     .order('id', { ascending: true });
 
                 if (error) {
@@ -899,6 +1022,8 @@
                 }
             } catch (err) {
                 console.error('Failed to load from Supabase:', err);
+            } finally {
+                hidePageLoader();
             }
         }
 
@@ -966,7 +1091,7 @@
         }
 
         async function loadSiteSettings() {
-            if (!supabaseClient) return;
+            if (!supabaseClient) { updateOnlineBadge(); return; }
             try {
                 const { data, error } = await supabaseClient
                     .from('site')
@@ -976,11 +1101,13 @@
 
                 if (error) {
                     console.error('Error loading site settings:', error);
+                    updateOnlineBadge();
                     return;
                 }
                 
                 if (!data) {
                     console.warn('No site settings found');
+                    updateOnlineBadge();
                     return;
                 }
                 
@@ -988,6 +1115,7 @@
                 applySiteSettings(data);
             } catch (err) {
                 console.error('Failed to load site settings:', err);
+                updateOnlineBadge();
             }
         }
 
@@ -1050,29 +1178,43 @@
                 if (favicon) favicon.href = logo;
             }
 
+            updateOnlineBadge();
+
+            updateCartUI();
+            applyHeaderFood();
+        }
+
+        function updateOnlineBadge() {
             const badge = document.getElementById('online-badge');
+            const skeleton = document.getElementById('online-badge-skeleton');
+            const content = document.getElementById('online-badge-content');
             const badgeText = document.getElementById('online-badge-text');
             const badgePing = document.getElementById('online-badge-ping');
             const badgeDot = document.getElementById('online-badge-dot');
 
-            if (badge && badgeText && badgePing && badgeDot) {
-                if (siteOnline) {
-                    badge.className = 'flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0';
-                    badgePing.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
-                    badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500';
-                    badgeText.textContent = 'Онлайн';
-                    console.log('Badge updated to ONLINE');
-                } else {
-                    badge.className = 'flex items-center gap-1.5 bg-gray-500/10 border border-gray-500/30 text-gray-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0';
-                    badgePing.className = 'absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-40';
-                    badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-gray-500';
-                    badgeText.textContent = 'Офлайн';
-                    console.log('Badge updated to OFFLINE');
-                }
-            }
+            if (!badge || !content || !badgeText || !badgePing || !badgeDot) return;
 
-            updateCartUI();
-            applyHeaderFood();
+            if (siteOnline) {
+                badge.className = 'relative flex items-center justify-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0 min-w-[86px] sm:min-w-[96px]';
+                badgePing.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+                badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-emerald-500';
+                badgeText.textContent = 'Онлайн';
+                console.log('Badge updated to ONLINE');
+            } else {
+                badge.className = 'relative flex items-center justify-center gap-1.5 bg-gray-500/10 border border-gray-500/30 text-gray-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm shrink-0 min-w-[86px] sm:min-w-[96px]';
+                badgePing.className = 'absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-40';
+                badgeDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-gray-500';
+                badgeText.textContent = 'Офлайн';
+                console.log('Badge updated to OFFLINE');
+            }
+            if (skeleton && !skeleton.classList.contains('fading')) {
+                skeleton.classList.add('fading');
+                skeleton.addEventListener('transitionend', () => skeleton.remove(), { once: true });
+            }
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('flex', 'badge-fade-in');
+            }
         }
 
         function refreshScheduleOnline() {
@@ -1100,9 +1242,15 @@
             if (!product) return;
 
             nameEl.textContent = product.name;
-            priceEl.textContent = `${Number(product.price).toLocaleString()} ₸`;
+            if (hasSale(product)) {
+                priceEl.innerHTML = `<span class="text-xs xs:text-sm sm:text-base font-bold text-gray-500 font-mono line-through mr-1.5">${Number(product.price).toLocaleString()} ₸</span><span class="text-flame-500">${getEffectivePrice(product).toLocaleString()} ₸</span><span class="ml-1.5 text-[9px] sm:text-[10px] font-black bg-flame-600 text-white px-1 py-0.5 rounded uppercase align-middle">Акция</span>`;
+            } else {
+                priceEl.textContent = `${Number(product.price).toLocaleString()} ₸`;
+            }
+            if (imageEl.getAttribute('src') !== product.image) showHeroPhotoLoader();
             imageEl.src = product.image;
             imageEl.alt = product.name;
+            if (imageEl.complete) hideHeroPhotoLoader();
             addBtn.onclick = function () { addToCartDirect(product.id); };
             addBtn.disabled = Boolean(product.cost !== null && product.cost !== undefined && product.cost <= 0);
         }
@@ -1214,6 +1362,9 @@
 
                 const hasLimit = product.cost !== null && product.cost !== undefined;
                 const isSoldOut = hasLimit && product.cost <= 0;
+                const saleOn = hasSale(product);
+                const effectivePrice = getEffectivePrice(product);
+                const discountPct = saleOn ? Math.round((1 - effectivePrice / product.price) * 100) : 0;
 
                 return `
                     <div class="bg-dark-900 border border-dark-800 hover:border-flame-500/50 rounded-xl sm:rounded-2xl p-2.5 xs:p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 group relative">
@@ -1222,6 +1373,7 @@
                             <div class="flex justify-between items-start mb-1.5 gap-1 min-h-[22px]">
                                 <div class="flex flex-wrap gap-1 items-center">
                                     ${product.badge ? `<span class="bg-flame-600 text-white text-[8px] xs:text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">${product.badge}</span>` : ''}
+                                    ${saleOn ? `<span class="border border-flame-500 text-flame-500 bg-flame-500/10 text-[8px] xs:text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Акция</span>` : ''}
                                     ${spicyIconsHtml}
                                 </div>
                                 ${hasLimit ? `<span class="text-[8px] xs:text-[9px] font-bold ${isSoldOut ? 'text-red-500' : 'text-amber-400'} bg-dark-950 px-1 py-0.5 rounded border border-dark-800 shrink-0">Ост: ${product.cost}</span>` : ''}
@@ -1229,7 +1381,7 @@
 
                             <!-- Image Container -->
                             <div class="w-full h-24 xs:h-28 sm:h-36 rounded-lg sm:rounded-xl bg-dark-950 border border-dark-800 overflow-hidden mb-2 group-hover:border-flame-500/40 transition-colors">
-                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isSoldOut ? 'opacity-40 grayscale' : ''}" loading="lazy">
+                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isSoldOut ? 'opacity-40 grayscale' : ''}" loading="lazy" decoding="async">
                             </div>
 
                             <h3 class="font-heading font-bold text-white text-xs xs:text-sm sm:text-base leading-snug line-clamp-1 group-hover:text-flame-500 transition-colors">
@@ -1241,8 +1393,10 @@
                         </div>
 
                         <div class="mt-2.5 pt-2 border-t border-dark-800 flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
-                            <div>
-                                <span class="text-xs xs:text-sm sm:text-lg font-black text-white font-mono">${product.price.toLocaleString()} ₸</span>
+                            <div class="flex items-baseline gap-1.5 flex-wrap">
+                                ${saleOn ? `<span class="text-[10px] xs:text-xs sm:text-sm font-bold text-gray-500 font-mono line-through">${product.price.toLocaleString()} ₸</span>` : ''}
+                                <span class="text-xs xs:text-sm sm:text-lg font-black ${saleOn ? 'text-flame-500' : 'text-white'} font-mono">${effectivePrice.toLocaleString()} ₸</span>
+                                ${saleOn ? `<span class="text-[8px] xs:text-[9px] font-black bg-flame-600 text-white px-1 py-0.5 rounded uppercase">-${discountPct}%</span>` : ''}
                             </div>
 
                             <div class="w-full xs:w-auto">
@@ -1267,6 +1421,27 @@
                     </div>
                 `;
             }).join('');
+            initProductsReveal(grid);
+        }
+
+        let productsRevealDone = false;
+        function initProductsReveal(grid) {
+            if (productsRevealDone || !('IntersectionObserver' in window)) return;
+            if (!grid.children.length) return;
+            productsRevealDone = true;
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('revealed');
+                    entry.target.style.transitionDelay = '';
+                    obs.unobserve(entry.target);
+                });
+            }, { rootMargin: '0px 0px -24px 0px' });
+            Array.from(grid.children).forEach((card, i) => {
+                card.classList.add('reveal');
+                card.style.transitionDelay = Math.min(i * 45, 270) + 'ms';
+                observer.observe(card);
+            });
         }
 
         function updateQty(productId, change) {
@@ -1345,7 +1520,7 @@
             const pickupBtn = document.getElementById('pickup-btn');
 
             const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-            const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+            const subtotal = cart.reduce((sum, item) => sum + (getEffectivePrice(item.product) * item.qty), 0);
             const shipping = (totalCount > 0 && deliveryEnabled) ? deliveryPrice : 0;
             const finalTotal = subtotal + shipping;
 
@@ -1405,7 +1580,10 @@
                             <img src="${item.product.image}" alt="${item.product.name}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border border-dark-700 shrink-0" loading="lazy">
                             <div class="min-w-0">
                                 <h4 class="font-bold text-white text-xs leading-tight truncate">${item.product.name}</h4>
-                                <div class="text-flame-500 font-mono text-xs font-bold mt-0.5">${(item.product.price * item.qty).toLocaleString()} ₸</div>
+                                <div class="text-flame-500 font-mono text-xs font-bold mt-0.5">
+                                    ${hasSale(item.product) ? `<span class="text-gray-500 line-through text-[10px] font-normal mr-1">${(item.product.price * item.qty).toLocaleString()} ₸</span>` : ''}
+                                    ${(getEffectivePrice(item.product) * item.qty).toLocaleString()} ₸
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-1 bg-dark-900 border border-dark-700 rounded-lg p-1 shrink-0">
@@ -1446,7 +1624,7 @@
             isSubmittingOrder = false;
             toggleCart(false);
             const modal = document.getElementById('checkout-modal');
-            const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+            const subtotal = cart.reduce((sum, item) => sum + (getEffectivePrice(item.product) * item.qty), 0);
             const shipping = deliveryEnabled ? deliveryPrice : 0;
             document.getElementById('modal-total-price').innerText = `${(subtotal + shipping).toLocaleString()} ₸`;
             
@@ -1516,16 +1694,16 @@
                 const address = deliveryEnabled ? document.getElementById('address-input').value : 'Самовывоз';
                 const comment = (document.getElementById('order-comment').value || '').trim();
 
-                const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+                const subtotal = cart.reduce((sum, item) => sum + (getEffectivePrice(item.product) * item.qty), 0);
                 const shipping = deliveryEnabled ? deliveryPrice : 0;
                 const finalTotal = subtotal + shipping;
 
                 const orderItems = cart.map(item => ({
                     id: item.id,
                     name: item.product.name,
-                    price: item.product.price,
+                    price: getEffectivePrice(item.product),
                     qty: item.qty,
-                    total: item.product.price * item.qty
+                    total: getEffectivePrice(item.product) * item.qty
                 }));
 
                 if (!supabaseClient) {
