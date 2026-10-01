@@ -218,6 +218,7 @@
             transition: opacity 0.3s ease-in;
         }
     </style>
+    <script src="./config.js"></script>
 </head>
 <body class="bg-dark-950 text-gray-100 min-h-screen flex flex-col pb-safe md:pb-0 selection:bg-flame-500 selection:text-white antialiased">
 
@@ -651,8 +652,8 @@
 
     <script>
         // Supabase Credentials Hardcoded
-        const SUPABASE_URL = 'https://hucevbfupkllculloiom.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Y2V2YmZ1cGtsbGN1bGxvaW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MTI0ODksImV4cCI6MjEwNTM4ODQ4OX0.9HN9xg5-lsmRmMAEuPG7goML-ybX4iGj6pWdE4IuTdU';
+        const SUPABASE_URL = window.DEMU_CONFIG.supabaseUrl;
+        const SUPABASE_ANON_KEY = window.DEMU_CONFIG.supabaseAnonKey;
 
         let supabaseClient = null;
         let isSupabaseActive = false;
