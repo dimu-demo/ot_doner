@@ -1,0 +1,27 @@
+{
+  "name": "Dimu doner - Админ панель",
+  "short_name": "Админ",
+  "description": "Панель управления для Dimu doner",
+  "start_url": "./admin.html",
+  "display": "standalone",
+  "background_color": "#060606",
+  "theme_color": "#060606",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "https://hucevbfupkllculloiom.supabase.co/storage/v1/object/public/app/photo_2026-09-26_12-13-10.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://hucevbfupkllculloiom.supabase.co/storage/v1/object/public/app/photo_2026-09-26_12-13-10.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business"],
+  "lang": "ru"
+}

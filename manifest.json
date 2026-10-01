@@ -1,7 +1,7 @@
 {
-  "name": "ОТ ДОНЕР - Панель управления",
-  "short_name": "ОТ ДОНЕР",
-  "description": "Система управления заказами и меню для ОТ ДОНЕР",
+  "name": "Dimu doner - Панель управления",
+  "short_name": "Dimu doner",
+  "description": "Система управления заказами и меню для Dimu doner",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#060606",
