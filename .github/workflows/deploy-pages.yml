@@ -26,12 +26,19 @@ jobs:
         run: |
           test -n "$SUPABASE_URL" || { echo "missing secret SUPABASE_URL"; exit 1; }
           test -n "$SUPABASE_ANON_KEY" || { echo "missing secret SUPABASE_ANON_KEY"; exit 1; }
+          shopt -s extglob
+          mkdir -p _site
+          cp -r !(_site|.git) _site/
           printf 'window.DEMU_CONFIG = {\n    supabaseUrl: \"%s\",\n    supabaseAnonKey: \"%s\"\n};\n' \
-            "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > config.js
+            "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > _site/config.js
+          rm -f _site/config.example.js
+          ls -l _site
+          test -s _site/config.js || { echo "config.js missing from _site"; exit 1; }
+          test -s _site/admin.html || { echo "admin.html missing from repo"; exit 1; }
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
       - id: deployment
         uses: actions/deploy-pages@v4
