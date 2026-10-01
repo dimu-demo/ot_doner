@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # upload-pages-artifact вырезает из артефакта всё, что попало в
+      # .gitignore, поэтому сайт собирается в отдельную папку _site,
+      # а config.js создаётся только в ней.
       - name: Generate config.js from secrets
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -34,7 +37,7 @@ jobs:
           rm -f _site/config.example.js
           ls -l _site
           test -s _site/config.js || { echo "config.js missing from _site"; exit 1; }
-          test -s _site/admin.html || { echo "admin.html missing from repo"; exit 1; }
+          test -s _site/schedule.js || { echo "schedule.js missing from repo"; exit 1; }
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
